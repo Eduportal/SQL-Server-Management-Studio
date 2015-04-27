@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <State>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;SourceControl xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;Enabled&gt;false&lt;/Enabled&gt;
+  &lt;ProjectName /&gt;
+  &lt;AuxPath /&gt;
+  &lt;LocalPath /&gt;
+  &lt;Provider /&gt;
+&lt;/SourceControl&gt;</State>
+  <DataSources>
+    <ProjectItem>
+      <Name>FinSampleDB.rds</Name>
+      <FullPath>FinSampleDB.rds</FullPath>
+    </ProjectItem>
+  </DataSources>
+  <Reports>
+    <ProjectItem>
+      <Name>Balance Sheet.rdl</Name>
+      <FullPath>Balance Sheet.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>IncomeStmtCurYTD-Company.rdl</Name>
+      <FullPath>IncomeStmtCurYTD-Company.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>IncomeStmtCurYTD-Region.rdl</Name>
+      <FullPath>IncomeStmtCurYTD-Region.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>IncomeStmtTrended.rdl</Name>
+      <FullPath>IncomeStmtTrended.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Trial Balance.rdl</Name>
+      <FullPath>Trial Balance.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>VarianceReport.rdl</Name>
+      <FullPath>VarianceReport.rdl</FullPath>
+    </ProjectItem>
+  </Reports>
+  <Configurations>
+    <Configuration>
+      <Name>Debug</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetServerURL>http://localhost/ReportServer</TargetServerURL>
+        <TargetFolder>Microsoft SQL Server Report Pack for Financial Reports</TargetFolder>
+        <OverwriteDataSources>true</OverwriteDataSources>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>DebugLocal</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>Accounting Report Pack</TargetFolder>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>Production</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>Accounting Report Pack</TargetFolder>
+      </Options>
+    </Configuration>
+  </Configurations>
+</Project>

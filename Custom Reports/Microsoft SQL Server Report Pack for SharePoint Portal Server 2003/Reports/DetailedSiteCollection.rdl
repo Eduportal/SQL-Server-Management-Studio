@@ -1,0 +1,772 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="dbSPSReportingSample">
+      <DataSourceReference>dbSPSReportingSample</DataSourceReference>
+      <rd:DataSourceID>40b67b84-dcf8-441c-b918-c358644fb167</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <BottomMargin>1in</BottomMargin>
+  <RightMargin>0.25in</RightMargin>
+  <ReportParameters>
+    <ReportParameter Name="SiteSurKey">
+      <DataType>String</DataType>
+      <Prompt>Site Collection</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>SiteNames</DataSetName>
+          <ValueField>SiteSurKey</ValueField>
+          <LabelField>SiteURL</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="DateRange">
+      <DataType>String</DataType>
+      <Prompt>DateRange</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>30D</Value>
+            <Label>Last 30 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>60D</Value>
+            <Label>Last 60 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>90D</Value>
+            <Label>Last 90 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>6M</Value>
+            <Label>Last 6 Months</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>12M</Value>
+            <Label>Last 12 Months</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <Body>
+    <ReportItems>
+      <Line Name="line1">
+        <Left>0.25in</Left>
+        <Top>0.875in</Top>
+        <ZIndex>14</ZIndex>
+        <Width>6.75in</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>3pt</Default>
+          </BorderWidth>
+          <BorderColor>
+            <Default>DarkOrange</Default>
+          </BorderColor>
+        </Style>
+        <Height>0in</Height>
+      </Line>
+      <Line Name="line3">
+        <Left>0.25in</Left>
+        <Top>2.125in</Top>
+        <ZIndex>13</ZIndex>
+        <Width>6.75in</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>3pt</Default>
+          </BorderWidth>
+          <BorderColor>
+            <Default>DarkOrange</Default>
+          </BorderColor>
+        </Style>
+        <Height>0in</Height>
+      </Line>
+      <List Name="list1">
+        <Left>5.775in</Left>
+        <KeepTogether>true</KeepTogether>
+        <ReportItems>
+          <Chart Name="chart1">
+            <Legend>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+              <Position>RightCenter</Position>
+            </Legend>
+            <Subtype>Stacked</Subtype>
+            <Title>
+              <Style>
+                <FontSize>8pt</FontSize>
+              </Style>
+            </Title>
+            <Height>0.242in</Height>
+            <CategoryAxis>
+              <Axis>
+                <Title />
+                <MajorGridLines>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                  </Style>
+                </MajorGridLines>
+                <MinorGridLines>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                  </Style>
+                </MinorGridLines>
+                <Min>0</Min>
+                <Reverse>true</Reverse>
+              </Axis>
+            </CategoryAxis>
+            <PointWidth>0</PointWidth>
+            <ThreeDProperties>
+              <Rotation>30</Rotation>
+              <Inclination>30</Inclination>
+              <Shading>Simple</Shading>
+              <WallThickness>50</WallThickness>
+            </ThreeDProperties>
+            <DataSetName>FileTypeTrendData</DataSetName>
+            <SeriesGroupings>
+              <SeriesGrouping>
+                <StaticSeries>
+                  <StaticMember>
+                    <Label>Count</Label>
+                  </StaticMember>
+                  <StaticMember>
+                    <Label>Remain</Label>
+                  </StaticMember>
+                </StaticSeries>
+              </SeriesGrouping>
+            </SeriesGroupings>
+            <PlotArea>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+                <BackgroundColor>LightGrey</BackgroundColor>
+              </Style>
+            </PlotArea>
+            <ValueAxis>
+              <Axis>
+                <Title>
+                  <Position>Far</Position>
+                </Title>
+                <MajorGridLines>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                  </Style>
+                </MajorGridLines>
+                <MinorGridLines>
+                  <Style>
+                    <BorderStyle>
+                      <Default>Solid</Default>
+                    </BorderStyle>
+                  </Style>
+                </MinorGridLines>
+                <Min>0</Min>
+                <Scalar>true</Scalar>
+              </Axis>
+            </ValueAxis>
+            <Type>Bar</Type>
+            <CategoryGroupings>
+              <CategoryGrouping>
+                <DynamicCategories>
+                  <Grouping Name="chart1_CategoryGroup1">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!RelativeURL.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Grouping>
+                  <Label>=Fields!RelativeURL.Value</Label>
+                </DynamicCategories>
+              </CategoryGrouping>
+            </CategoryGroupings>
+            <Palette>Default</Palette>
+            <ChartData>
+              <ChartSeries>
+                <DataPoints>
+                  <DataPoint>
+                    <DataValues>
+                      <DataValue>
+                        <Value>=Fields!COUNT.Value</Value>
+                      </DataValue>
+                    </DataValues>
+                    <DataLabel />
+                    <Marker>
+                      <Size>6pt</Size>
+                    </Marker>
+                  </DataPoint>
+                </DataPoints>
+              </ChartSeries>
+              <ChartSeries>
+                <DataPoints>
+                  <DataPoint>
+                    <DataValues>
+                      <DataValue>
+                        <Value>=Max(Fields!COUNT.Value,"FileTypeTrendData") - Fields!COUNT.Value </Value>
+                      </DataValue>
+                    </DataValues>
+                    <DataLabel />
+                    <Marker>
+                      <Size>6pt</Size>
+                    </Marker>
+                  </DataPoint>
+                </DataPoints>
+              </ChartSeries>
+            </ChartData>
+            <Style>
+              <BackgroundColor>White</BackgroundColor>
+            </Style>
+          </Chart>
+        </ReportItems>
+        <DataSetName>FileTypeTrendData</DataSetName>
+        <Top>3in</Top>
+        <ZIndex>12</ZIndex>
+        <PageBreakAtEnd>true</PageBreakAtEnd>
+        <Width>1.14in</Width>
+        <Grouping Name="list1_Details_Group">
+          <GroupExpressions>
+            <GroupExpression>=Fields!RelativeURL.Value</GroupExpression>
+          </GroupExpressions>
+        </Grouping>
+        <Height>0.252in</Height>
+      </List>
+      <Textbox Name="WebSurKey">
+        <Left>1.5in</Left>
+        <Top>1in</Top>
+        <rd:DefaultName>WebSurKey</rd:DefaultName>
+        <ZIndex>11</ZIndex>
+        <Width>1in</Width>
+        <Style>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>=Count(Fields!WebSurKey.Value, "SiteWebs")</Value>
+      </Textbox>
+      <Textbox Name="UserSurKey">
+        <Left>1.5in</Left>
+        <Top>1.625in</Top>
+        <rd:DefaultName>UserSurKey</rd:DefaultName>
+        <ZIndex>10</ZIndex>
+        <Width>1in</Width>
+        <Style>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>=Count(Fields!UserSurKey.Value, "SiteUsers")</Value>
+      </Textbox>
+      <Textbox Name="COUNT_1">
+        <Left>1.5in</Left>
+        <Top>1.375in</Top>
+        <rd:DefaultName>COUNT_1</rd:DefaultName>
+        <ZIndex>9</ZIndex>
+        <Width>1in</Width>
+        <Style>
+          <TextAlign>Right</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>=Sum(Fields!COUNT.Value, "FileTypeTrendData")</Value>
+      </Textbox>
+      <Image Name="image1">
+        <Sizing>Fit</Sizing>
+        <Left>0.625in</Left>
+        <Top>0.125in</Top>
+        <ZIndex>8</ZIndex>
+        <Width>0.25in</Width>
+        <Source>Embedded</Source>
+        <Style />
+        <Height>0.625in</Height>
+        <Value>sitetrendlogo</Value>
+      </Image>
+      <Textbox Name="textbox12">
+        <Left>5.75in</Left>
+        <Top>2.5in</Top>
+        <ZIndex>7</ZIndex>
+        <Width>1.125in</Width>
+        <Style>
+          <TextAlign>Center</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <FontFamily>Trebuchet MS</FontFamily>
+          <FontWeight>700</FontWeight>
+          <BorderColor>
+            <Bottom>Black</Bottom>
+            <Top>Black</Top>
+            <Left>Black</Left>
+            <Right>Black</Right>
+          </BorderColor>
+          <BackgroundColor>Gray</BackgroundColor>
+          <Color>White</Color>
+          <PaddingRight>2pt</PaddingRight>
+        </Style>
+        <Height>0.501in</Height>
+        <Value>Site </Value>
+      </Textbox>
+      <Textbox Name="textbox10">
+        <Left>1in</Left>
+        <Top>1in</Top>
+        <rd:DefaultName>textbox10</rd:DefaultName>
+        <ZIndex>6</ZIndex>
+        <Width>0.5in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Sites:</Value>
+      </Textbox>
+      <Textbox Name="textbox9">
+        <Left>0.25in</Left>
+        <Top>2.25in</Top>
+        <rd:DefaultName>textbox9</rd:DefaultName>
+        <ZIndex>5</ZIndex>
+        <Width>1.25in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontWeight>700</FontWeight>
+          <FontSize>13pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Top 20 Pages</Value>
+      </Textbox>
+      <Textbox Name="textbox8">
+        <Left>1in</Left>
+        <Top>1.375in</Top>
+        <rd:DefaultName>textbox8</rd:DefaultName>
+        <ZIndex>4</ZIndex>
+        <Width>0.5in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Hits:</Value>
+      </Textbox>
+      <Textbox Name="textbox7">
+        <Left>1in</Left>
+        <Top>1.625in</Top>
+        <rd:DefaultName>textbox7</rd:DefaultName>
+        <ZIndex>3</ZIndex>
+        <Width>0.5in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Users:</Value>
+      </Textbox>
+      <Textbox Name="textbox2">
+        <Left>1in</Left>
+        <Top>0.125in</Top>
+        <rd:DefaultName>textbox2</rd:DefaultName>
+        <ZIndex>2</ZIndex>
+        <Width>3.875in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontFamily>Verdana</FontFamily>
+          <FontWeight>700</FontWeight>
+          <FontSize>12pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Detailed Site Collection Report</Value>
+      </Textbox>
+      <Textbox Name="SiteURL">
+        <Left>1in</Left>
+        <Top>0.375in</Top>
+        <rd:DefaultName>SiteURL</rd:DefaultName>
+        <ZIndex>1</ZIndex>
+        <Width>3.875in</Width>
+        <Style>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontSize>12pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.375in</Height>
+        <Value>=First(Fields!SiteURL.Value, "FileTypeTrendData")</Value>
+      </Textbox>
+      <Table Name="table1">
+        <Left>0.25in</Left>
+        <DataSetName>FileTypeTrendData</DataSetName>
+        <Top>2.5in</Top>
+        <Width>5.5in</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="RelativeURL">
+                      <rd:DefaultName>RelativeURL</rd:DefaultName>
+                      <ZIndex>3</ZIndex>
+                      <Action>
+                        <Drillthrough>
+                          <ReportName>DetailedPageReport</ReportName>
+                          <Parameters>
+                            <Parameter Name="FileNameSurKey">
+                              <Value>=Fields!FileNameSurKey.Value</Value>
+                            </Parameter>
+                            <Parameter Name="DateRange">
+                              <Value>=Parameters!DateRange.Value</Value>
+                            </Parameter>
+                            <Parameter Name="SiteSurKey">
+                              <Value>=Parameters!SiteSurKey.Value</Value>
+                            </Parameter>
+                          </Parameters>
+                        </Drillthrough>
+                      </Action>
+                      <Style>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <Color>CornflowerBlue</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!RelativeURL.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="DateLastAccessed">
+                      <rd:DefaultName>DateLastAccessed</rd:DefaultName>
+                      <ZIndex>2</ZIndex>
+                      <Style>
+                        <TextAlign>Center</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <Format>d</Format>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!DateLastAccessed.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="FileSize">
+                      <rd:DefaultName>FileSize</rd:DefaultName>
+                      <ZIndex>1</ZIndex>
+                      <Style>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!FileSize.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="COUNT">
+                      <rd:DefaultName>COUNT</rd:DefaultName>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!COUNT.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.25in</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <Style>
+          <BorderStyle>
+            <Top>None</Top>
+          </BorderStyle>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <BackgroundColor>White</BackgroundColor>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox11">
+                      <ZIndex>7</ZIndex>
+                      <Style>
+                        <TextAlign>Left</TextAlign>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>File Name</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <ZIndex>6</ZIndex>
+                      <Style>
+                        <TextAlign>Center</TextAlign>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Date Last Accessed</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox1">
+                      <rd:DefaultName>textbox1</rd:DefaultName>
+                      <ZIndex>5</ZIndex>
+                      <Style>
+                        <TextAlign>Center</TextAlign>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <BorderColor>
+                          <Bottom>Black</Bottom>
+                          <Top>Black</Top>
+                          <Left>Black</Left>
+                          <Right>Black</Right>
+                        </BorderColor>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>File Size</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox5">
+                      <ZIndex>4</ZIndex>
+                      <Style>
+                        <TextAlign>Center</TextAlign>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>700</FontWeight>
+                        <BorderColor>
+                          <Bottom>Black</Bottom>
+                          <Top>Black</Top>
+                          <Left>Black</Left>
+                          <Right>Black</Right>
+                        </BorderColor>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Hits</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.5in</Height>
+            </TableRow>
+          </TableRows>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>2.875in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>0.75in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>0.875in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1in</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>0.75in</Height>
+      </Table>
+    </ReportItems>
+    <Height>3.75in</Height>
+  </Body>
+  <rd:ReportID>7e40a7f0-e056-414a-a9b0-602576717186</rd:ReportID>
+  <LeftMargin>0.25in</LeftMargin>
+  <EmbeddedImages>
+    <EmbeddedImage Name="sitetrendlogo">
+      <ImageData>Qk12CwAAAAAAADYAAAAoAAAAFAAAADAAAAABABgAAAAAAEALAAAAAAAAAAAAAAAAAAAAAAAASEhI9/f3////////////////////////////////////////////////////////////////////cHBwPj4+t7e3////////////////////////////////////////////////////////////////5+fnDw8PaWlpXl5e////////////////////////9/f3h4eHn5+f////////////////////////////l5eXSEhIr6+vGhoa////////////////////////39/fAAAAERER////////////////////////////PT09j4+P7+/vAAAA19fX////////////////////39/fAAAADAwM////////////////////////7+/vBgYGz8/P////HR0dj4+P////////////////////39/fAAAADAwM////////////////////////n5+fCwsL////////VFRUMDAw////////////////////39/fAAAADAwM////////////////////////SkpKQUFB////////n5+fBQUF7+/v////////////////39/fAAAADAwM////////////////////9/f3BQUFn5+f////////39/fAAAAr6+v////////////////39/fAAAADAwM////////////////////r6+vAAAA39/f////////////CQkJVFRU////////////////39/fAAAADAwM////////////////////VFRUFBQU////////////////QUFBDg4O////////////////39/fAAAADg4O////////////////9/f3CAgIVFRU////////////////j4+PAAAAz8/P////////////39/fAAAADw8P////
+////////////v7+/AAAAn5+f////////////////x8fHAAAAe3t7////////////39/fAAAADw8P////////////////Xl5eAAAA39/f////////////////9/f3BAQEMDAw////////////39/fAAAADw8P////////////////Dg4OFBQU////////////////////////MDAwAAAA7+/v////////39/fAAAADw8P////////////x8fHAAAAaWlp////////////////////////dHR0AAAAmpqa////////39/fAAAADw8P////////////ZWVlAAAAr6+v////////////////////////r6+vAAAATExM////////39/fAAAAERER////////////ERERAAAA7+/v////////////////////////7+/vAAAACAgI////////39/fAAAAERER////////0NDQAAAAISEh////////////////////////////////ISEhBAQEra2t////39/fAAAAERER////////YGBgAQEBaWlp////////////////////////////////Xl5eAQEBZGRk////39/fAAAAERER////////Hx8fBQUFr6+v////////////////////////////////n5+fBgYGGxsb////39/fAAAAERER////w8PDCAgICwsL7+/v////////////////////////////////39/fDAwMCQkJysrK39/fAAAAEhIS////Z2dnAwMDMDAw////////////////////////////////////////Dg4OCQkJd3d339/fAAAAFBQU////Hx8fAgICe3t7////////////////////////////////////19fXLS0tAAAALy8vp6enAAAADw8PsbGxCQkJEBAQh4eH7+/v////////////////////9/f
+3QUFBQEBAAQEBBAQEAAAAAwMDBAQEAwMDAwMDBAQEAgICAgICAwMDGBgYODg4Wlpa////////////39/fGBgYv7+/EhISAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWVlZp6enHBwc////////////39/fICAgYGBeQEA+PT07QEA+PT07QEA+PT07QEA+Pj48Pj48QEA+PT07QEA+a2tqHBwc////////////39/fICAgAAAAv7+nPj46sbGbUlJLnZ2LZGRbi4t7d3dqd3dqi4t7ZGRbsbGbRkZEHx8f////////////39/fICAgAAAA5eXJ0tK54ODFxMSt8vLUycmx1NS75eXJzs621NS739/E4ODFsLCoICAg////////////39/fICAgAAAAsrKe///fsrKesrKe///fsrKesrKe///fsrKesrKe///fsrKepqaeICAg////////////39/fICAgAAAA9/fYeXlu7OzPjY1/2dm/n5+OxcWusrKesrKexcWun5+O7OzPcnJuICAg////////////39/fICAgAAAAKysn0tK5lpaHhoZ58vLUiYl8kJCB5eXJjIx+kJCB39/ElpaHcnJuICAg////////////39/fICAgAAAAODgxcHBi///f39/Dt7eg///f///f///f///f///f///f///f6+vfICAg////////////39/fICAgAAAAkJCAAAAAKiolAAAADg4Ma2tijo5/srKegoJ2jo5/n5+OpqaUVlZUICAg////////////39/fICAgAAAA5eXJY2NXAAATNzcxAAAAWFhO1NS75eXJzs621NS739/E4ODFsLCoICAg////////////39/fICAgAAAA5eXJ///f5eXJ3t7DAAAsBwcGz8+2///f5eXJ5eXJ///f5eXJ1NTJICAg////////////39/fICAgAAAAsrKeeXlupqaUa2tilZWDAAAAMTEsdX
+VndnZrjo5/n5+OpqaUVlZUICAg////////////39/fICAgAAAA///f0tK5+fna2dm/8vLUYmJWAAAXAAAAAAAAm5uI39/E+fnawsK5ICAg////////////39/fICAgAAAAmZmJ///fmZmJmZmJ///fmZmJmZmJv7+nKysnDg4N9/fYmZmJeHh0ICAg////////////39/fICAgAAAA///feXlu7OzPjY1/2dm/n5+OxcWusrKerKyZAAAXWVlQ7OzPcnJuICAg////////////39/fICAgAAAAzMy00tK5yMiwsLCc8vLUtLSgvr6o5eXJubmkjo5+BwcGtbWfjY2GICAg////////////39/fICAgAAAAzMy0///fzMy0zMy0///fzMy0zMy0///fzMy0zMy0YGBUWlpPvb20ICAg////////////39/fICAgAAAA5eXJeXlu1NS7gYF12dm/kZGCsrKesrKeoqKQsrKelZWFKCgjaWllHh4e////////////39/fICAgQ0NCsrKtn5+brq6pfn577OzlhoaDnp6azMzGkpKOnp6aubm0rq6qamppHBwc////////////39/fDg4Of39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/cHBwGRkZ////////////////n5+ff39/f39/f39/f39/f39/f39/MDAwQEBAf39/f39/f39/f39/f39/f39/v7+/////////////////////////////////////////////YGBgY2Nj////////////////////////////////////////////////////////////////////////r6+vtbW1////////////////////////////////////</ImageData>
+      <MIMEType>image/bmp</MIMEType>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <DataSets>
+    <DataSet Name="FileTypeTrendData">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_Select_SitePageTrend</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@SiteSurKey">
+            <Value>=Parameters!SiteSurKey.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@DateRange">
+            <Value>=Parameters!DateRange.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="FileNameSurKey">
+          <rd:TypeName>System.Int64</rd:TypeName>
+          <DataField>FileNameSurKey</DataField>
+        </Field>
+        <Field Name="SiteURL">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>SiteURL</DataField>
+        </Field>
+        <Field Name="RelativeURL">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>RelativeURL</DataField>
+        </Field>
+        <Field Name="COUNT">
+          <rd:TypeName>System.Int32</rd:TypeName>
+          <DataField>Count</DataField>
+        </Field>
+        <Field Name="DateLastAccessed">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>DateLastAccessed</DataField>
+        </Field>
+        <Field Name="FileSize">
+          <DataField>FileSize</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SiteWebs">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_Select_SiteWebs</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@SiteSurKey">
+            <Value>=Parameters!SiteSurKey.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="WebSurKey">
+          <rd:TypeName>System.Int32</rd:TypeName>
+          <DataField>WebSurKey</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SiteUsers">
+      <Query>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_Select_SiteUsers</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@SiteSurKey">
+            <Value>=Parameters!SiteSurKey.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="UserSurKey">
+          <rd:TypeName>System.Int32</rd:TypeName>
+          <DataField>UserSurKey</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SiteNames">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandText>select ds.SiteSurKey, substring(da.VirtualServerName, 1, len(da.VirtualServerName)-1) + ds.SiteURL as SiteURL
+from DimSite ds
+inner join FactSiteStorage fss on ds.SiteSurKey = fss.SiteSurKey
+inner join DimArch da on da.ArchSurKey = fss.ArchSurKey
+group by ds.SiteSurKey, da.VirtualServerName, ds.SiteURL
+order by SiteURL</CommandText>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="SiteSurKey">
+          <rd:TypeName>System.Int32</rd:TypeName>
+          <DataField>SiteSurKey</DataField>
+        </Field>
+        <Field Name="SiteURL">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>SiteURL</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <Width>8.5in</Width>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <Description>Shows top 20 pages accessed (based on hit count) for this site collection.  You can click on a page to go to the Detailed Page Report.</Description>
+  <Language>en-US</Language>
+  <TopMargin>1in</TopMargin>
+</Report>

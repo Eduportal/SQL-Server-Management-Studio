@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <State>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;SourceControl xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;Enabled&gt;false&lt;/Enabled&gt;
+  &lt;ProjectName /&gt;
+  &lt;AuxPath /&gt;
+  &lt;LocalPath /&gt;
+  &lt;Provider /&gt;
+&lt;/SourceControl&gt;</State>
+  <DataSources>
+    <ProjectItem>
+      <Name>IISDatabase.rds</Name>
+      <FullPath>IISDatabase.rds</FullPath>
+    </ProjectItem>
+  </DataSources>
+  <Reports>
+    <ProjectItem>
+      <Name>Browser Statistics.rdl</Name>
+      <FullPath>Browser Statistics.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Country Statistics.rdl</Name>
+      <FullPath>Country Statistics.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Hourly Statistics.rdl</Name>
+      <FullPath>Hourly Statistics.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>OS Statistics.rdl</Name>
+      <FullPath>OS Statistics.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Pages.rdl</Name>
+      <FullPath>Pages.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Day of Month.rdl</Name>
+      <FullPath>Day of Month.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Day of Week.rdl</Name>
+      <FullPath>Day of Week.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Global Statistics.rdl</Name>
+      <FullPath>Global Statistics.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Site Summary.rdl</Name>
+      <FullPath>Site Summary.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Time Period.rdl</Name>
+      <FullPath>Time Period.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Visitors.rdl</Name>
+      <FullPath>Visitors.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Length Statistics.rdl</Name>
+      <FullPath>Length Statistics.rdl</FullPath>
+    </ProjectItem>
+  </Reports>
+  <Configurations>
+    <Configuration>
+      <Name>Debug</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetServerURL>http://localhost/reportserver</TargetServerURL>
+        <TargetFolder>Microsoft SQL Server Report Pack for IIS Logs</TargetFolder>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>DebugLocal</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>IISReports</TargetFolder>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>Production</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>IISReports</TargetFolder>
+      </Options>
+    </Configuration>
+  </Configurations>
+</Project>

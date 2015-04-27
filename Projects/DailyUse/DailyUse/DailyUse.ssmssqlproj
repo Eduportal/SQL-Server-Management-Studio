@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="DailyUse">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="SEAFRESQLDBA01:AMER\sledridge">
+          <Created>2009-12-17T15:26:49.3661641-08:00</Created>
+          <Type>SQL</Type>
+          <Server>SEAFRESQLDBA01</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName />
+        </ConnectionNode>
+        <ConnectionNode Name="SEAFRESQLRPT01:AMER\sledridge">
+          <Created>2009-12-17T15:31:26.2387681-08:00</Created>
+          <Type>SQL</Type>
+          <Server>SEAFRESQLRPT01</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB />
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName />
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="DEPLControl Ticket Status.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>DEPLControl Ticket Status.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Generic Cleanup Process.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLRPT01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLRPT01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Generic Cleanup Process.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SEFRESQLRPT01 Origional Cleanup Script.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SEFRESQLRPT01 Origional Cleanup Script.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery1.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLRPT01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLRPT01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery1.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery2.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLRPT01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLRPT01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery2.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery3.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLRPT01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLRPT01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery3.sql</FullPath>
+        </FileNode>
+        <FileNode Name="Unused Objects.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>Unused Objects.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items />
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

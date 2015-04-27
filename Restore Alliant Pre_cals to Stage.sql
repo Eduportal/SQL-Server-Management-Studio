@@ -1,0 +1,152 @@
+  
+ 
+DROP DATABASE [Getty_Master]
+ 
+ 
+ 
+EXEC [msdb].[dbo].[sp_delete_database_backuphistory] 'Getty_Master'
+ 
+ 
+ 
+DECLARE @FilesRestored INT = 0
+ 
+ 
+RAISERROR ('Restoring File "GETTY_MASTER_DB_20150204100639_SET_[0-9][0-9]_OF_[0-9][0-9].cBAK"',-1,-1) WITH NOWAIT
+RESTORE DATABASE [Getty_Master] 
+FROM    DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_01_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_02_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_03_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_04_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_05_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_06_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_07_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_08_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_09_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_10_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_11_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_12_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_13_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_14_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_15_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_16_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_17_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_18_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_19_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_20_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_21_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_22_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_23_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_24_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_25_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_26_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_27_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_28_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_29_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_30_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_31_OF_32.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DB_20150204100639_SET_32_OF_32.cBAK'
+ 
+ WITH NORECOVERY,REPLACE
+        ,MOVE 'dv_installapplData' TO 'E:\Data5\Getty_Master.MDF'
+        ,MOVE 'dv_installappData2' TO 'E:\Data3\Getty_Master_1.NDF'
+        ,MOVE 'dv_installappData04' TO 'E:\Data3\Getty_Master_2.ndf'
+        ,MOVE 'dv_installappData03' TO 'E:\Data2\Getty_Master_3.ndf'
+        ,MOVE 'getty_master05' TO 'E:\Data4\Getty_Master_4.ndf'
+        ,MOVE 'getty_master06' TO 'E:\Data5\Getty_Master_5.ndf'
+        ,MOVE 'lg_installapplLog' TO 'F:\Log\Getty_Master_6.LDF'        ,STATS=1
+ 
+SET @FilesRestored = @FilesRestored + 1
+ 
+RAISERROR ('Restoring File "GETTY_MASTER_DFNTL_20150204100639.cDIF"',-1,-1) WITH NOWAIT
+RESTORE DATABASE [Getty_Master] 
+FROM    DISK = '\\SEAPSQLRYL0A\pre_calc\GETTY_MASTER_DFNTL_20150204100639.cDIF'
+ 
+ WITH NORECOVERY,REPLACE
+        ,STATS=1
+ 
+SET @FilesRestored = @FilesRestored + 1
+ 
+RESTORE DATABASE [Getty_Master] WITH RECOVERY
+SELECT @FilesRestored
+IF @FilesRestored > 0 RAISERROR('DATABASE WAS UPDATED',-1,-1) WITH NOWAIT
+
+GO 
+
+
+ 
+DROP DATABASE [ContractMaintenanceControl]
+ 
+ 
+ 
+EXEC [msdb].[dbo].[sp_delete_database_backuphistory] 'ContractMaintenanceControl'
+ 
+ 
+ 
+DECLARE @FilesRestored INT = 0
+ 
+ 
+RAISERROR ('Restoring File "ContractMaintenanceControl_DB_20150204100544.cBAK"',-1,-1) WITH NOWAIT
+RESTORE DATABASE [ContractMaintenanceControl] 
+FROM    DISK = '\\SEAPSQLRYL0A\pre_calc\ContractMaintenanceControl_DB_20150204100544.cBAK'
+ 
+ WITH NORECOVERY,REPLACE
+        ,MOVE 'ContractMaintenanceControl_Data' TO 'E:\Data2\ContractMaintenanceControl_Data.MDF'
+        ,MOVE 'ContractMaintenanceControl_Log' TO 'F:\Log\ContractMaintenanceControl_log.LDF'
+        ,MOVE 'ContractMaintenanceControl_1_Log' TO 'F:\Log\ContractMaintenanceControl_Log2'        ,STATS=1
+ 
+SET @FilesRestored = @FilesRestored + 1
+ 
+RAISERROR ('Restoring File "ContractMaintenanceControl_DFNTL_20150204100545.cDIF"',-1,-1) WITH NOWAIT
+RESTORE DATABASE [ContractMaintenanceControl] 
+FROM    DISK = '\\SEAPSQLRYL0A\pre_calc\ContractMaintenanceControl_DFNTL_20150204100545.cDIF'
+ 
+ WITH NORECOVERY,REPLACE
+        ,STATS=1
+ 
+SET @FilesRestored = @FilesRestored + 1
+ 
+RESTORE DATABASE [ContractMaintenanceControl] WITH RECOVERY
+SELECT @FilesRestored
+IF @FilesRestored > 0 RAISERROR('DATABASE WAS UPDATED',-1,-1) WITH NOWAIT
+
+GO 
+ 
+DROP DATABASE [RM_Integration]
+ 
+ 
+EXEC [msdb].[dbo].[sp_delete_database_backuphistory] 'RM_Integration'
+ 
+ 
+ 
+DECLARE @FilesRestored INT = 0
+ 
+ 
+RAISERROR ('Restoring File "RM_Integration_DB_20150204100126_SET_[0-9][0-9]_OF_[0-9][0-9].cBAK"',-1,-1) WITH NOWAIT
+RESTORE DATABASE [RM_Integration] 
+FROM    DISK = '\\SEAPSQLRYL0A\pre_calc\RM_Integration_DB_20150204100126_SET_01_OF_03.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\RM_Integration_DB_20150204100126_SET_02_OF_03.cBAK'
+,DISK = '\\SEAPSQLRYL0A\pre_calc\RM_Integration_DB_20150204100126_SET_03_OF_03.cBAK'
+ 
+ WITH NORECOVERY,REPLACE
+        ,MOVE 'rm_integration_dat' TO 'E:\Data4\rm_integration_dat.mdf'
+        ,MOVE 'rm_integration_log' TO 'F:\Log\rm_integration_log.ldf'        ,STATS=1
+ 
+SET @FilesRestored = @FilesRestored + 1
+ 
+RAISERROR ('Restoring File "RM_Integration_DFNTL_20150204100126.cDIF"',-1,-1) WITH NOWAIT
+RESTORE DATABASE [RM_Integration] 
+FROM    DISK = '\\SEAPSQLRYL0A\pre_calc\RM_Integration_DFNTL_20150204100126.cDIF'
+ 
+ WITH NORECOVERY,REPLACE
+        ,STATS=1
+ 
+SET @FilesRestored = @FilesRestored + 1
+ 
+RESTORE DATABASE [RM_Integration] WITH RECOVERY
+SELECT @FilesRestored
+IF @FilesRestored > 0 RAISERROR('DATABASE WAS UPDATED',-1,-1) WITH NOWAIT
+ 
+GO
+
+ 
+

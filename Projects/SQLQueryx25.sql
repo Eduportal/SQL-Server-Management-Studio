@@ -1,0 +1,1 @@
+select * from dbacentral.dbo.dba_serverinfo where sqlname like '%RZT%'

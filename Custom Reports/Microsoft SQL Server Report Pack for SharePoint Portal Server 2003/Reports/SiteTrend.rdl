@@ -1,0 +1,1030 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="dbSPSReportingSample">
+      <DataSourceReference>dbSPSReportingSample</DataSourceReference>
+      <rd:DataSourceID>c9fd090a-353f-4a4d-9380-2a56d5a38c54</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <BottomMargin>0.5in</BottomMargin>
+  <RightMargin>0.5in</RightMargin>
+  <ReportParameters>
+    <ReportParameter Name="DateRange">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <Prompt>Filter by:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>30D</Value>
+            <Label>Last 30 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>60D</Value>
+            <Label>Last 60 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>90D</Value>
+            <Label>Last 90 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>6M</Value>
+            <Label>Last 6 Months</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>12M</Value>
+            <Label>Last 12 Months</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <Body>
+    <ReportItems>
+      <Textbox Name="textbox14">
+        <Left>0.625in</Left>
+        <Top>0.375in</Top>
+        <ZIndex>6</ZIndex>
+        <Visibility>
+          <Hidden>=Count(Fields!VirtualServerName.Value, "VirtualServerTrendData") &gt; 0</Hidden>
+        </Visibility>
+        <Width>1.5in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontWeight>700</FontWeight>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>No results to display</Value>
+      </Textbox>
+      <Line Name="line2">
+        <Top>0.875in</Top>
+        <ZIndex>5</ZIndex>
+        <Width>7.25in</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>3pt</Default>
+          </BorderWidth>
+          <BorderColor>
+            <Default>DarkOrange</Default>
+          </BorderColor>
+        </Style>
+        <Height>0in</Height>
+      </Line>
+      <Image Name="image1">
+        <Sizing>Fit</Sizing>
+        <Left>0.125in</Left>
+        <Top>0.125in</Top>
+        <ZIndex>4</ZIndex>
+        <Width>0.25in</Width>
+        <Source>Embedded</Source>
+        <Style />
+        <Height>0.625in</Height>
+        <Value>sitetrendlogo</Value>
+      </Image>
+      <Textbox Name="textbox9">
+        <Left>0.625in</Left>
+        <Top>0.125in</Top>
+        <rd:DefaultName>textbox9</rd:DefaultName>
+        <ZIndex>3</ZIndex>
+        <Width>1.75in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontFamily>Verdana</FontFamily>
+          <FontWeight>700</FontWeight>
+          <FontSize>12pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Site Trend Report</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <Top>1.125in</Top>
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <ZIndex>2</ZIndex>
+        <Width>1.625in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontWeight>700</FontWeight>
+          <FontSize>13pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Virtual Servers</Value>
+      </Textbox>
+      <Chart Name="chart1">
+        <Legend>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+          </Style>
+          <Position>RightCenter</Position>
+        </Legend>
+        <Subtype>Plain</Subtype>
+        <Title>
+          <Caption>="Top 20 Sites Over The " + Parameters!DateRange.Label</Caption>
+          <Style>
+            <FontWeight>700</FontWeight>
+            <FontSize>12pt</FontSize>
+          </Style>
+        </Title>
+        <CategoryAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Visible>true</Visible>
+          </Axis>
+        </CategoryAxis>
+        <PointWidth>0</PointWidth>
+        <ThreeDProperties>
+          <Rotation>30</Rotation>
+          <Inclination>30</Inclination>
+          <Shading>Simple</Shading>
+          <WallThickness>50</WallThickness>
+        </ThreeDProperties>
+        <DataSetName>SiteTrendData</DataSetName>
+        <Top>3in</Top>
+        <PlotArea>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+            <BackgroundColor>LightGrey</BackgroundColor>
+          </Style>
+        </PlotArea>
+        <ValueAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Margin>true</Margin>
+            <Visible>true</Visible>
+            <Scalar>true</Scalar>
+          </Axis>
+        </ValueAxis>
+        <ZIndex>1</ZIndex>
+        <Type>Bar</Type>
+        <Width>7.25in</Width>
+        <CategoryGroupings>
+          <CategoryGrouping>
+            <DynamicCategories>
+              <Grouping Name="chart1_CategoryGroup1">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!SiteURL.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Sorting>
+                <SortBy>
+                  <SortExpression>=Fields!COUNT.Value</SortExpression>
+                  <Direction>Ascending</Direction>
+                </SortBy>
+              </Sorting>
+              <Label>=Fields!SiteURL.Value</Label>
+            </DynamicCategories>
+          </CategoryGrouping>
+        </CategoryGroupings>
+        <Palette>Default</Palette>
+        <ChartData>
+          <ChartSeries>
+            <DataPoints>
+              <DataPoint>
+                <DataValues>
+                  <DataValue>
+                    <Value>=Sum(Fields!COUNT.Value)</Value>
+                  </DataValue>
+                </DataValues>
+                <DataLabel />
+                <Marker />
+              </DataPoint>
+            </DataPoints>
+          </ChartSeries>
+        </ChartData>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+      </Chart>
+      <Table Name="table1">
+        <Footer>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox8">
+                      <rd:DefaultName>textbox8</rd:DefaultName>
+                      <ZIndex>9</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>8pt</FontSize>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Totals</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox10">
+                      <rd:DefaultName>textbox10</rd:DefaultName>
+                      <ZIndex>8</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox11">
+                      <rd:DefaultName>textbox11</rd:DefaultName>
+                      <ZIndex>7</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox12">
+                      <rd:DefaultName>textbox12</rd:DefaultName>
+                      <ZIndex>6</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox13">
+                      <rd:DefaultName>textbox13</rd:DefaultName>
+                      <ZIndex>5</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontWeight>700</FontWeight>
+                        <FontSize>8pt</FontSize>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=sum(Fields!COUNT.Value)</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.25in</Height>
+            </TableRow>
+          </TableRows>
+        </Footer>
+        <DataSetName>VirtualServerTrendData</DataSetName>
+        <Top>1.5in</Top>
+        <TableGroups>
+          <TableGroup>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="VirtualServerNameTextBox">
+                          <ZIndex>24</ZIndex>
+                          <Action>
+                            <Drillthrough>
+                              <ReportName>ComprehensiveSiteCollections</ReportName>
+                              <Parameters>
+                                <Parameter Name="VirtualServerName">
+                                  <Value>=Fields!VirtualServerName.Value</Value>
+                                </Parameter>
+                                <Parameter Name="DateRange">
+                                  <Value>=Parameters!DateRange.Value</Value>
+                                </Parameter>
+                              </Parameters>
+                            </Drillthrough>
+                          </Action>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <FontSize>8pt</FontSize>
+                            <BackgroundColor>LightYellow</BackgroundColor>
+                            <Color>CornflowerBlue</Color>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!VirtualServerName.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox15">
+                          <rd:DefaultName>textbox15</rd:DefaultName>
+                          <ZIndex>23</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>LightYellow</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox16">
+                          <rd:DefaultName>textbox16</rd:DefaultName>
+                          <ZIndex>22</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>LightYellow</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox17">
+                          <rd:DefaultName>textbox17</rd:DefaultName>
+                          <ZIndex>21</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>LightYellow</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox18">
+                          <rd:DefaultName>textbox18</rd:DefaultName>
+                          <ZIndex>20</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <FontSize>8pt</FontSize>
+                            <BackgroundColor>LightYellow</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=sum(Fields!COUNT.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.25in</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+            <Grouping Name="VirtualServer_Group">
+              <GroupExpressions>
+                <GroupExpression>=Fields!VirtualServerName.Value</GroupExpression>
+              </GroupExpressions>
+            </Grouping>
+          </TableGroup>
+          <TableGroup>
+            <Visibility>
+              <ToggleItem>VirtualServerNameTextBox</ToggleItem>
+              <Hidden>true</Hidden>
+            </Visibility>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox24">
+                          <rd:DefaultName>textbox24</rd:DefaultName>
+                          <ZIndex>19</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>SeaShell</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="SiteURLTextBox">
+                          <ZIndex>18</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <FontSize>8pt</FontSize>
+                            <BackgroundColor>SeaShell</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!SiteURL.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox26">
+                          <rd:DefaultName>textbox26</rd:DefaultName>
+                          <ZIndex>17</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>SeaShell</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox27">
+                          <rd:DefaultName>textbox27</rd:DefaultName>
+                          <ZIndex>16</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>SeaShell</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox37">
+                          <ZIndex>15</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <FontSize>8pt</FontSize>
+                            <BackgroundColor>SeaShell</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=sum(Fields!COUNT.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.25in</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+            <Grouping Name="SiteURL_Group">
+              <GroupExpressions>
+                <GroupExpression>=Fields!SiteURL.Value</GroupExpression>
+              </GroupExpressions>
+            </Grouping>
+          </TableGroup>
+          <TableGroup>
+            <Visibility>
+              <ToggleItem>SiteURLTextBox</ToggleItem>
+              <Hidden>true</Hidden>
+            </Visibility>
+            <Header>
+              <TableRows>
+                <TableRow>
+                  <TableCells>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox35">
+                          <rd:DefaultName>textbox35</rd:DefaultName>
+                          <ZIndex>14</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>Honeydew</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox36">
+                          <rd:DefaultName>textbox36</rd:DefaultName>
+                          <ZIndex>13</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>Honeydew</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="WebNameTextBox">
+                          <ZIndex>12</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <FontSize>8pt</FontSize>
+                            <BackgroundColor>Honeydew</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=Fields!WebName.Value</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox38">
+                          <rd:DefaultName>textbox38</rd:DefaultName>
+                          <ZIndex>11</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <BackgroundColor>Honeydew</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value />
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                    <TableCell>
+                      <ReportItems>
+                        <Textbox Name="textbox28">
+                          <ZIndex>10</ZIndex>
+                          <Style>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <FontSize>8pt</FontSize>
+                            <BackgroundColor>Honeydew</BackgroundColor>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                          </Style>
+                          <CanGrow>true</CanGrow>
+                          <Value>=sum(Fields!COUNT.Value)</Value>
+                        </Textbox>
+                      </ReportItems>
+                    </TableCell>
+                  </TableCells>
+                  <Height>0.25in</Height>
+                </TableRow>
+              </TableRows>
+            </Header>
+            <Grouping Name="WebName_Group">
+              <GroupExpressions>
+                <GroupExpression>=Fields!WebName.Value</GroupExpression>
+              </GroupExpressions>
+            </Grouping>
+          </TableGroup>
+        </TableGroups>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="VirtualServerName">
+                      <rd:DefaultName>VirtualServerName</rd:DefaultName>
+                      <ZIndex>4</ZIndex>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <BackgroundColor>Azure</BackgroundColor>
+                        <Color>CornflowerBlue</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="SiteURL">
+                      <rd:DefaultName>SiteURL</rd:DefaultName>
+                      <ZIndex>3</ZIndex>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <BackgroundColor>Azure</BackgroundColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox34">
+                      <rd:DefaultName>textbox34</rd:DefaultName>
+                      <ZIndex>2</ZIndex>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <BackgroundColor>Azure</BackgroundColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value />
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="ListTitle">
+                      <rd:DefaultName>ListTitle</rd:DefaultName>
+                      <ZIndex>1</ZIndex>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <BackgroundColor>Azure</BackgroundColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!ListTitle.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox39">
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontSize>8pt</FontSize>
+                        <BackgroundColor>Azure</BackgroundColor>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=sum(Fields!COUNT.Value)</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.25in</Height>
+            </TableRow>
+          </TableRows>
+          <Grouping Name="table1_Details_Group">
+            <GroupExpressions>
+              <GroupExpression>=Fields!ListTitle.Value</GroupExpression>
+            </GroupExpressions>
+          </Grouping>
+          <Visibility>
+            <ToggleItem>WebNameTextBox</ToggleItem>
+            <Hidden>true</Hidden>
+          </Visibility>
+        </Details>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox2">
+                      <rd:DefaultName>textbox2</rd:DefaultName>
+                      <ZIndex>29</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Virtual Server Name</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <rd:DefaultName>textbox3</rd:DefaultName>
+                      <ZIndex>28</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Collections</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox4">
+                      <rd:DefaultName>textbox4</rd:DefaultName>
+                      <ZIndex>27</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Sites / Areas</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox5">
+                      <rd:DefaultName>textbox5</rd:DefaultName>
+                      <ZIndex>26</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Lists</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox6">
+                      <rd:DefaultName>textbox6</rd:DefaultName>
+                      <ZIndex>25</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Top>Solid</Top>
+                        </BorderStyle>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Hit Count</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.21in</Height>
+            </TableRow>
+          </TableRows>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>1.875in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1.75in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1.625in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1.25in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>0.77206in</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>1.46in</Height>
+      </Table>
+    </ReportItems>
+    <Height>7.375in</Height>
+  </Body>
+  <rd:ReportID>36d3ea7b-d812-4895-9774-af008fd7becd</rd:ReportID>
+  <LeftMargin>0.5in</LeftMargin>
+  <EmbeddedImages>
+    <EmbeddedImage Name="sitetrendlogo">
+      <ImageData>Qk12CwAAAAAAADYAAAAoAAAAFAAAADAAAAABABgAAAAAAEALAAAAAAAAAAAAAAAAAAAAAAAASEhI9/f3////////////////////////////////////////////////////////////////////cHBwPj4+t7e3////////////////////////////////////////////////////////////////5+fnDw8PaWlpXl5e////////////////////////9/f3h4eHn5+f////////////////////////////l5eXSEhIr6+vGhoa////////////////////////39/fAAAAERER////////////////////////////PT09j4+P7+/vAAAA19fX////////////////////39/fAAAADAwM////////////////////////7+/vBgYGz8/P////HR0dj4+P////////////////////39/fAAAADAwM////////////////////////n5+fCwsL////////VFRUMDAw////////////////////39/fAAAADAwM////////////////////////SkpKQUFB////////n5+fBQUF7+/v////////////////39/fAAAADAwM////////////////////9/f3BQUFn5+f////////39/fAAAAr6+v////////////////39/fAAAADAwM////////////////////r6+vAAAA39/f////////////CQkJVFRU////////////////39/fAAAADAwM////////////////////VFRUFBQU////////////////QUFBDg4O////////////////39/fAAAADg4O////////////////9/f3CAgIVFRU////////////////j4+PAAAAz8/P////////////39/fAAAADw8P////
+////////////v7+/AAAAn5+f////////////////x8fHAAAAe3t7////////////39/fAAAADw8P////////////////Xl5eAAAA39/f////////////////9/f3BAQEMDAw////////////39/fAAAADw8P////////////////Dg4OFBQU////////////////////////MDAwAAAA7+/v////////39/fAAAADw8P////////////x8fHAAAAaWlp////////////////////////dHR0AAAAmpqa////////39/fAAAADw8P////////////ZWVlAAAAr6+v////////////////////////r6+vAAAATExM////////39/fAAAAERER////////////ERERAAAA7+/v////////////////////////7+/vAAAACAgI////////39/fAAAAERER////////0NDQAAAAISEh////////////////////////////////ISEhBAQEra2t////39/fAAAAERER////////YGBgAQEBaWlp////////////////////////////////Xl5eAQEBZGRk////39/fAAAAERER////////Hx8fBQUFr6+v////////////////////////////////n5+fBgYGGxsb////39/fAAAAERER////w8PDCAgICwsL7+/v////////////////////////////////39/fDAwMCQkJysrK39/fAAAAEhIS////Z2dnAwMDMDAw////////////////////////////////////////Dg4OCQkJd3d339/fAAAAFBQU////Hx8fAgICe3t7////////////////////////////////////19fXLS0tAAAALy8vp6enAAAADw8PsbGxCQkJEBAQh4eH7+/v////////////////////9/f
+3QUFBQEBAAQEBBAQEAAAAAwMDBAQEAwMDAwMDBAQEAgICAgICAwMDGBgYODg4Wlpa////////////39/fGBgYv7+/EhISAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWVlZp6enHBwc////////////39/fICAgYGBeQEA+PT07QEA+PT07QEA+PT07QEA+Pj48Pj48QEA+PT07QEA+a2tqHBwc////////////39/fICAgAAAAv7+nPj46sbGbUlJLnZ2LZGRbi4t7d3dqd3dqi4t7ZGRbsbGbRkZEHx8f////////////39/fICAgAAAA5eXJ0tK54ODFxMSt8vLUycmx1NS75eXJzs621NS739/E4ODFsLCoICAg////////////39/fICAgAAAAsrKe///fsrKesrKe///fsrKesrKe///fsrKesrKe///fsrKepqaeICAg////////////39/fICAgAAAA9/fYeXlu7OzPjY1/2dm/n5+OxcWusrKesrKexcWun5+O7OzPcnJuICAg////////////39/fICAgAAAAKysn0tK5lpaHhoZ58vLUiYl8kJCB5eXJjIx+kJCB39/ElpaHcnJuICAg////////////39/fICAgAAAAODgxcHBi///f39/Dt7eg///f///f///f///f///f///f///f6+vfICAg////////////39/fICAgAAAAkJCAAAAAKiolAAAADg4Ma2tijo5/srKegoJ2jo5/n5+OpqaUVlZUICAg////////////39/fICAgAAAA5eXJY2NXAAATNzcxAAAAWFhO1NS75eXJzs621NS739/E4ODFsLCoICAg////////////39/fICAgAAAA5eXJ///f5eXJ3t7DAAAsBwcGz8+2///f5eXJ5eXJ///f5eXJ1NTJICAg////////////39/fICAgAAAAsrKeeXlupqaUa2tilZWDAAAAMTEsdX
+VndnZrjo5/n5+OpqaUVlZUICAg////////////39/fICAgAAAA///f0tK5+fna2dm/8vLUYmJWAAAXAAAAAAAAm5uI39/E+fnawsK5ICAg////////////39/fICAgAAAAmZmJ///fmZmJmZmJ///fmZmJmZmJv7+nKysnDg4N9/fYmZmJeHh0ICAg////////////39/fICAgAAAA///feXlu7OzPjY1/2dm/n5+OxcWusrKerKyZAAAXWVlQ7OzPcnJuICAg////////////39/fICAgAAAAzMy00tK5yMiwsLCc8vLUtLSgvr6o5eXJubmkjo5+BwcGtbWfjY2GICAg////////////39/fICAgAAAAzMy0///fzMy0zMy0///fzMy0zMy0///fzMy0zMy0YGBUWlpPvb20ICAg////////////39/fICAgAAAA5eXJeXlu1NS7gYF12dm/kZGCsrKesrKeoqKQsrKelZWFKCgjaWllHh4e////////////39/fICAgQ0NCsrKtn5+brq6pfn577OzlhoaDnp6azMzGkpKOnp6aubm0rq6qamppHBwc////////////39/fDg4Of39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/cHBwGRkZ////////////////n5+ff39/f39/f39/f39/f39/f39/MDAwQEBAf39/f39/f39/f39/f39/f39/v7+/////////////////////////////////////////////YGBgY2Nj////////////////////////////////////////////////////////////////////////r6+vtbW1////////////////////////////////////</ImageData>
+      <MIMEType>image/bmp</MIMEType>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <DataSets>
+    <DataSet Name="VirtualServerTrendData">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_Select_WSS</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@DateRange">
+            <Value>=Parameters!DateRange.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="VirtualServerName">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>VirtualServerName</DataField>
+        </Field>
+        <Field Name="SiteURL">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>SiteURL</DataField>
+        </Field>
+        <Field Name="WebName">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>WebName</DataField>
+        </Field>
+        <Field Name="ListTitle">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>ListTitle</DataField>
+        </Field>
+        <Field Name="COUNT">
+          <rd:TypeName>System.Int32</rd:TypeName>
+          <DataField>COUNT</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="SiteTrendData">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_Select_SiteTrend</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@DateRange">
+            <Value>=Parameters!DateRange.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="SiteURL">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>SiteURL</DataField>
+        </Field>
+        <Field Name="COUNT">
+          <rd:TypeName>System.Int32</rd:TypeName>
+          <DataField>COUNT</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <Width>7.27206in</Width>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <Description>Shows hit counts for virtual servers, collections, areas and lists.  Also shown are the top 20 sites based on hits.  You can click through the virtual server to go to the Comprehensive Site Collections Report.</Description>
+  <Language>en-US</Language>
+  <TopMargin>0.5in</TopMargin>
+</Report>

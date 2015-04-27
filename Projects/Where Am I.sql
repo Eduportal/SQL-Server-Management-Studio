@@ -1,0 +1,1 @@
+SELECT [env_detail] FROM [dbaadmin].[dbo].[Local_ServerEnviro] WHERE env_type = 'ENVname'

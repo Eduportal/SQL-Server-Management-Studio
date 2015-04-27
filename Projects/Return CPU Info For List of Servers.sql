@@ -1,0 +1,30 @@
+
+DECLARE		@ServerList	Table (ServerName sysname)
+
+INSERT INTO	@ServerList
+SELECT		Item
+FROM		dbaadmin.dbo.fn_split ('SEAEXSQLMOM03,SEAPASPSQL01,SEAPASPSQL02,SEAPDASSQL01,SEAPGMSSQL01,SEAPGMSSQL02,SEAPPCXSQL01,SEAPPCXSQL02,SEAPSHLSQL01,SEAPSHLSQL02,SEAPSHWSQL01,SEAPSHWSQL02,SEADCLABSSQL01,SEAEXSQLMAIL,SEADCMKTSQL01,SEADCMKTSQL02,SEAPTRCSQL01,SEAPTRCSQL02,SEAPWVXSQL01,SEAPWVXSQL02',',')
+
+
+SELECT		Data.*,CPU_Physical,CPU_Cores,CPU_Logical,CPU_BitLevel,CPU_Speed
+
+FROM		(
+		SELECT		SQLName,ClustNode01 [ServerName],1 [ClusterNode]
+		FROM		DBA_ClusterInfo
+		WHERE		ClustNode01 IN (SELECT ServerName FROM @ServerList)
+		UNION ALL
+		SELECT		SQLName,ClustNode02,1 [ClusterNode]
+		FROM		DBA_ClusterInfo
+		WHERE		ClustNode02 IN (SELECT ServerName FROM @ServerList)
+		UNION ALL
+		SELECT		SQLName,ClustNode03,1 [ClusterNode]
+		FROM		DBA_ClusterInfo
+		WHERE		ClustNode03 IN (SELECT ServerName FROM @ServerList)
+		UNION ALL
+		SELECT		SQLName, servername,0 [ClusterNode]
+		From		dbo.DBA_ServerInfo
+		WHERE		servername in (SELECT ServerName FROM @ServerList)
+		) Data
+LEFT JOIN	dbo.ServerInfo SI
+	ON	SI.SQLName = Data.SQLName
+ORDER BY	1,2

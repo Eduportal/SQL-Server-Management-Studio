@@ -1,0 +1,515 @@
+<?xml version="1.0"?>
+<SqlWorkbenchSqlProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Name="CLR">
+  <Items>
+    <LogicalFolder Name="Connections" Type="2" Sorted="true">
+      <Items>
+        <ConnectionNode Name="SEAFRESQLDBA01:AMER\sledridge">
+          <Created>2010-05-13T11:51:14.2762293-07:00</Created>
+          <Type>SQL</Type>
+          <Server>SEAFRESQLDBA01</Server>
+          <UserName />
+          <Authentication>Windows Authentication</Authentication>
+          <InitialDB>dbaadmin</InitialDB>
+          <LoginTimeout>15</LoginTimeout>
+          <ExecutionTimeout>0</ExecutionTimeout>
+          <ConnectionProtocol>NotSpecified</ConnectionProtocol>
+          <ApplicationName>Microsoft SQL Server Management Studio - Query</ApplicationName>
+        </ConnectionNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Queries" Type="0" Sorted="true">
+      <Items>
+        <FileNode Name="BcpCleanup.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpCleanup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrCleanup.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrCleanup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrComputeHash.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrComputeHash.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrCopy.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrCopy.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrDelete.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrDelete.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrDirectoryInfo.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrDirectoryInfo.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrExport.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrExport.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrImport.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrImport.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrReadFile.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrReadFile.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrTransfer.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrTransfer.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpClrWriteFile.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpClrWriteFile.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpComputeHash.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpComputeHash.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpCopy.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpCopy.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpDelete.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpDelete.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpDirectoryInfo.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpDirectoryInfo.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpExport.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpExport.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpGetProcessList.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpGetProcessList.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpImport.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpImport.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpInsertProcessList.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpInsertProcessList.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpReadFile.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpReadFile.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpTransfer.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTransfer.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpTransferAssemblyInstall.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTransferAssemblyInstall.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpTransferCfgSetup.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTransferCfgSetup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpTransferClrSetup.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTransferClrSetup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpTransferEvtSetup.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTransferEvtSetup.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpTrimProcessList.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTrimProcessList.sql</FullPath>
+        </FileNode>
+        <FileNode Name="BcpWriteFile.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpWriteFile.sql</FullPath>
+        </FileNode>
+        <FileNode Name="ProcessList.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>ProcessList.sql</FullPath>
+        </FileNode>
+        <FileNode Name="add assemblies.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>add assemblies.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbasp_FileCompare.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>dbasp_FileCompare.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbasp_SendTweet.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>dbasp_SendTweet.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbaudf_CLR_Split.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>dbaudf_CLR_Split.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbaudf_DirectoryCompare.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>dbaudf_DirectoryCompare.sql</FullPath>
+        </FileNode>
+        <FileNode Name="dbaudf_GetSharePath.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:SEAFRESQLDBA01:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>SEAFRESQLDBA01</AssociatedConnSrvName>
+          <AssociatedConnUserName />
+          <FullPath>dbaudf_GetSharePath.sql</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+    <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
+      <Items>
+        <FileNode Name="BcpTransfer.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>BcpTransfer.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.DateTime.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.DateTime.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.DateTime.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.DateTime.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.Globalization.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.Globalization.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.Globalization.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.Globalization.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.Mail.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.Mail.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.Mail.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.Mail.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.ProductStudio.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.ProductStudio.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.ProductStudio.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.ProductStudio.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.ReportingServices.XmlSerializers.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.ReportingServices.XmlSerializers.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.ReportingServices.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.ReportingServices.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.ReportingServices.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.ReportingServices.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.String.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.String.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Functions.String.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Functions.String.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Interop.CommunicatorAPI.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Interop.CommunicatorAPI.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Interop.ProductStudio.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Interop.ProductStudio.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Interop.SourceDepotClient.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Interop.SourceDepotClient.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Interop.SourceDepotWrapper.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Interop.SourceDepotWrapper.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Live.Messenger.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Live.Messenger.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Rtc.Workflow.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Rtc.Workflow.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.PSHelper.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.PSHelper.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.PSHelper.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.PSHelper.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.RSHelper.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.RSHelper.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.RSHelper.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.RSHelper.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.SDHelper.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.SDHelper.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.SDHelper.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.SDHelper.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.Utility.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.Utility.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.SQLAuto.Utility.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.SQLAuto.Utility.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.Data.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.Data.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.Data.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.Data.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.IO.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.IO.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.IO.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.IO.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.SourceDepot.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.SourceDepot.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.SourceDepot.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.SourceDepot.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Microsoft.Sql.InternalTools.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Microsoft.Sql.InternalTools.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="OCSDKWrapper.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>OCSDKWrapper.dll</FullPath>
+        </FileNode>
+        <FileNode Name="SDWrap.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>SDWrap.dll</FullPath>
+        </FileNode>
+        <FileNode Name="SDWrap.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>SDWrap.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="SdApiInterop.DLL">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>SdApiInterop.DLL</FullPath>
+        </FileNode>
+        <FileNode Name="Silverlight.OCS.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Silverlight.OCS.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Yedda.Twitter.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Yedda.Twitter.dll</FullPath>
+        </FileNode>
+        <FileNode Name="Yedda.Twitter.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>Yedda.Twitter.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="sdapi.dll">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>sdapi.dll</FullPath>
+        </FileNode>
+        <FileNode Name="sdapi.lib">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>sdapi.lib</FullPath>
+        </FileNode>
+        <FileNode Name="sdapi.pdb">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>sdapi.pdb</FullPath>
+        </FileNode>
+        <FileNode Name="sdwrap.idl">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>sdwrap.idl</FullPath>
+        </FileNode>
+      </Items>
+    </LogicalFolder>
+  </Items>
+</SqlWorkbenchSqlProject>

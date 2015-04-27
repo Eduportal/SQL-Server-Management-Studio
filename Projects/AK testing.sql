@@ -1,0 +1,21 @@
+sp_who2 active
+
+
+kill 89
+
+DBCC FREEPROCCACHE
+DBCC DROPCLEANBUFFERS
+DBCC FREESESSIONCACHE
+
+DBCC FREESYSTEMCACHE
+DBCC FREESYSTEMCACHE ('ALL') WITH MARK_IN_USE_FOR_REMOVAL;
+
+
+
+exec AssetKeyword.[dbo].[SaveAssetBundles]
+
+
+exec AssetKeyword.[dbo].[SaveAsset20120627]
+
+
+

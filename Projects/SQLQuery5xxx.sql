@@ -1,0 +1,1 @@
+EXEC DBAADMIN.[dbo].[dbasp_check_SQLhealth] @verbose = 0

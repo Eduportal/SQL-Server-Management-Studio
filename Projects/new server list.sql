@@ -1,0 +1,13 @@
+Select * 
+From dbo.DBA_ServerInfo 
+
+where servername IN
+('FREcSHLSQL01'
+,'FREcASPSQL01'
+,'FREcSHWSQL01'
+,'FREcGMSSQLA01'
+,'FREcGMSSQLB01'
+,'FREcPCXSQL01')
+
+ORDER BY 4
+

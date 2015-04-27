@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <State>$base64$PFNvdXJjZUNvbnRyb2xJbmZvIHhtbG5zOnhzZD0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zOmRkbDI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yIiB4bWxuczpkZGwyXzI9Imh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vYW5hbHlzaXNzZXJ2aWNlcy8yMDAzL2VuZ2luZS8yLzIiIHhtbG5zOmR3ZD0iaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS9EYXRhV2FyZWhvdXNlL0Rlc2lnbmVyLzEuMCI+DQogIDxFbmFibGVkPmZhbHNlPC9FbmFibGVkPg0KICA8UHJvamVjdE5hbWU+PC9Qcm9qZWN0TmFtZT4NCiAgPEF1eFBhdGg+PC9BdXhQYXRoPg0KICA8TG9jYWxQYXRoPjwvTG9jYWxQYXRoPg0KICA8UHJvdmlkZXI+PC9Qcm92aWRlcj4NCjwvU291cmNlQ29udHJvbEluZm8+</State>
+  <DataSources>
+    <ProjectItem>
+      <Name>SqlNexus.rds</Name>
+      <FullPath>SqlNexus.rds</FullPath>
+    </ProjectItem>
+  </DataSources>
+  <Reports>
+    <ResourceProjectItem>
+      <Name>_readme.txt</Name>
+      <FullPath>_readme.txt</FullPath>
+      <MimeType>text/plain</MimeType>
+    </ResourceProjectItem>
+    <ProjectItem>
+      <Name>Blocking Chain Detail_C.rdl</Name>
+      <FullPath>Blocking Chain Detail_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Blocking Runtime Detail_C.rdl</Name>
+      <FullPath>Blocking Runtime Detail_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Instructions.rdl</Name>
+      <FullPath>Instructions.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Profiler Query Detail_C.rdl</Name>
+      <FullPath>Profiler Query Detail_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Query Hash_C.rdl</Name>
+      <FullPath>Query Hash_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Spinlock Stats_C.rdl</Name>
+      <FullPath>Spinlock Stats_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SQL 2000 Blocking Detail_C.rdl</Name>
+      <FullPath>SQL 2000 Blocking Detail_C.rdl</FullPath>
+    </ProjectItem>
+    <ResourceProjectItem>
+      <Name>SQL 2000 Blocking.rdl.xml</Name>
+      <FullPath>SQL 2000 Blocking.rdl.xml</FullPath>
+      <MimeType>text/plain</MimeType>
+    </ResourceProjectItem>
+    <ProjectItem>
+      <Name>SQL 2000 Blocking_C.rdl</Name>
+      <FullPath>SQL 2000 Blocking_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SQL Server 2000 Perf Stats.rdl</Name>
+      <FullPath>SQL Server 2000 Perf Stats.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SQL Server 2005 Perf Stats.rdl</Name>
+      <FullPath>SQL Server 2005 Perf Stats.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>SQL Server 2008 Perf Stats.rdl</Name>
+      <FullPath>SQL Server 2008 Perf Stats.rdl</FullPath>
+    </ProjectItem>
+    <ResourceProjectItem>
+      <Name>sql2000blockingvalidate.sql</Name>
+      <FullPath>sql2000blockingvalidate.sql</FullPath>
+      <MimeType>application/octet-stream</MimeType>
+    </ResourceProjectItem>
+    <ResourceProjectItem>
+      <Name>sqlnexusCoreValidate.sql</Name>
+      <FullPath>sqlnexusCoreValidate.sql</FullPath>
+    </ResourceProjectItem>
+    <ProjectItem>
+      <Name>Sysprocesses_C.rdl</Name>
+      <FullPath>Sysprocesses_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>WaitDetails_C.rdl</Name>
+      <FullPath>WaitDetails_C.rdl</FullPath>
+    </ProjectItem>
+    <ProjectItem>
+      <Name>Blocking and Wait Statistics_C.rdl</Name>
+      <FullPath>Blocking and Wait Statistics_C.rdl</FullPath>
+    </ProjectItem>
+    <ResourceProjectItem>
+      <Name>SQL Server 2005 Perf Stats.rdl.xml</Name>
+      <FullPath>SQL Server 2005 Perf Stats.rdl.xml</FullPath>
+      <MimeType>text/plain</MimeType>
+    </ResourceProjectItem>
+    <ProjectItem>
+      <Name>Bottleneck Analysis_C.rdl</Name>
+      <FullPath>Bottleneck Analysis_C.rdl</FullPath>
+    </ProjectItem>
+  </Reports>
+  <Configurations>
+    <Configuration>
+      <Name>Debug</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>NexusReports</TargetFolder>
+        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>DebugLocal</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>NexusReports</TargetFolder>
+        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
+      </Options>
+    </Configuration>
+    <Configuration>
+      <Name>Production</Name>
+      <Platform>Win32</Platform>
+      <Options>
+        <TargetFolder>NexusReports</TargetFolder>
+        <TargetDataSourceFolder>Data Sources</TargetDataSourceFolder>
+      </Options>
+    </Configuration>
+  </Configurations>
+</Project>

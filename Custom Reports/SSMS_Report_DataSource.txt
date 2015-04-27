@@ -1,0 +1,6 @@
+﻿  <DataSources>
+    <DataSource Name="Local">
+      <rd:DataSourceID>0e203d8b-76ca-4ff2-8947-0a0ea70cdec1</rd:DataSourceID>
+      <DataSourceReference>Local</DataSourceReference>
+    </DataSource>
+  </DataSources>

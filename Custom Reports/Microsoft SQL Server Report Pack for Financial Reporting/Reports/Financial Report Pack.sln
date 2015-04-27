@@ -1,0 +1,26 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{F14B399A-7131-4C87-9E4B-1186C45EF12D}") = "Financial Report Pack", "Financial Report Pack.rptproj", "{ABB1901A-3B02-44FF-9EE3-271A8C067E39}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Default = Debug|Default
+		DebugLocal|Default = DebugLocal|Default
+		Production|Default = Production|Default
+		Description = Financial Report Pack solution demonstrating common financial reports against the FRxSample database
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.Debug|Default.ActiveCfg = Debug
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.Debug|Default.Build.0 = Debug
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.Debug|Default.Deploy.0 = Debug
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.DebugLocal|Default.ActiveCfg = DebugLocal
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.DebugLocal|Default.Build.0 = DebugLocal
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.DebugLocal|Default.Deploy.0 = DebugLocal
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.Production|Default.ActiveCfg = Production
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.Production|Default.Build.0 = Production
+		{ABB1901A-3B02-44FF-9EE3-271A8C067E39}.Production|Default.Deploy.0 = Production
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

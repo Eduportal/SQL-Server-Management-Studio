@@ -1,0 +1,3 @@
+<report>
+	<validate script="Query Hash.rdl.sql"/>
+</report>

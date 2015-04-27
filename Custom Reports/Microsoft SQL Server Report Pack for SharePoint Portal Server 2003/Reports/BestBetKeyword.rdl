@@ -1,0 +1,623 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2005/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <DataSources>
+    <DataSource Name="dbSPSReportingSample">
+      <DataSourceReference>dbSPSReportingSample</DataSourceReference>
+      <rd:DataSourceID>855aa883-0dde-4864-8345-a3151da5bb98</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <BottomMargin>0.5in</BottomMargin>
+  <RightMargin>0.5in</RightMargin>
+  <ReportParameters>
+    <ReportParameter Name="DateRange">
+      <DataType>String</DataType>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Filter by:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>30D</Value>
+            <Label>Last 30 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>60D</Value>
+            <Label>Last 60 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>90D</Value>
+            <Label>Last 90 Days</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>6M</Value>
+            <Label>Last 6 Months</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>1Y</Value>
+            <Label>Last 12 Months</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="NumSelect">
+      <DataType>String</DataType>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Limit by:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>20</Value>
+            <Label>Top 20</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>10</Value>
+            <Label>Top 10</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>-10</Value>
+            <Label>Bottom 10</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>-20</Value>
+            <Label>Bottom 20</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="VirtualServerName">
+      <DataType>String</DataType>
+      <Prompt>Portal Site Name</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>VirtualServersWithPortals</DataSetName>
+          <ValueField>VirtualServerName</ValueField>
+          <LabelField>VirtualServerName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+  </ReportParameters>
+  <rd:DrawGrid>true</rd:DrawGrid>
+  <InteractiveWidth>8.5in</InteractiveWidth>
+  <rd:SnapToGrid>true</rd:SnapToGrid>
+  <Body>
+    <ReportItems>
+      <Textbox Name="textbox6">
+        <Left>0.625in</Left>
+        <Top>0.375in</Top>
+        <rd:DefaultName>textbox6</rd:DefaultName>
+        <ZIndex>8</ZIndex>
+        <Visibility>
+          <Hidden>=Count(Fields!SearchTermDesc.Value, "Keywords") &gt; 0</Hidden>
+        </Visibility>
+        <Width>1.5in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontWeight>700</FontWeight>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>No results to display</Value>
+      </Textbox>
+      <Line Name="line1">
+        <Top>1.125in</Top>
+        <ZIndex>7</ZIndex>
+        <Visibility>
+          <Hidden>=Count(Fields!SearchTermDesc.Value, "Keywords") = 0</Hidden>
+        </Visibility>
+        <Width>7.25in</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <BorderWidth>
+            <Default>3pt</Default>
+          </BorderWidth>
+          <BorderColor>
+            <Default>DarkOrange</Default>
+          </BorderColor>
+        </Style>
+        <Height>0in</Height>
+      </Line>
+      <Image Name="image1">
+        <Sizing>AutoSize</Sizing>
+        <Left>0.125in</Left>
+        <Top>0.125in</Top>
+        <ZIndex>6</ZIndex>
+        <Width>0.36458in</Width>
+        <Source>Embedded</Source>
+        <Style />
+        <Height>0.33333in</Height>
+        <Value>searchlogo</Value>
+      </Image>
+      <Textbox Name="textbox4">
+        <Left>6.25in</Left>
+        <Top>0.375in</Top>
+        <rd:DefaultName>textbox4</rd:DefaultName>
+        <ZIndex>5</ZIndex>
+        <Visibility>
+          <Hidden>=Count(Fields!SearchTermDesc.Value, "Keywords") = 0</Hidden>
+        </Visibility>
+        <Width>1in</Width>
+        <Style>
+          <BorderStyle>
+            <Default>Solid</Default>
+          </BorderStyle>
+          <TextAlign>Center</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontSize>8pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.5in</Height>
+        <Value>* This keyword also contained a best bet</Value>
+      </Textbox>
+      <Chart Name="chart1">
+        <Legend>
+          <Visible>true</Visible>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+          </Style>
+          <Position>RightCenter</Position>
+        </Legend>
+        <Subtype>Plain</Subtype>
+        <Title />
+        <Height>3in</Height>
+        <CategoryAxis>
+          <Axis>
+            <Title>
+              <Caption>Hits</Caption>
+            </Title>
+            <MajorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+          </Axis>
+        </CategoryAxis>
+        <PointWidth>0</PointWidth>
+        <ThreeDProperties>
+          <Rotation>30</Rotation>
+          <Inclination>30</Inclination>
+          <Shading>Simple</Shading>
+          <WallThickness>50</WallThickness>
+        </ThreeDProperties>
+        <DataSetName>Keywords</DataSetName>
+        <SeriesGroupings>
+          <SeriesGrouping>
+            <DynamicSeries>
+              <Grouping Name="chart1_SeriesGroup1">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!SearchTermDesc.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Label>=Fields!SearchTermDesc.Value</Label>
+            </DynamicSeries>
+          </SeriesGrouping>
+        </SeriesGroupings>
+        <Top>1.25in</Top>
+        <PlotArea>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+            <BackgroundColor>LightGrey</BackgroundColor>
+          </Style>
+        </PlotArea>
+        <ValueAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <ShowGridLines>true</ShowGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Margin>true</Margin>
+            <Visible>true</Visible>
+            <Scalar>true</Scalar>
+          </Axis>
+        </ValueAxis>
+        <ZIndex>4</ZIndex>
+        <Type>Column</Type>
+        <Width>7.25in</Width>
+        <Palette>Default</Palette>
+        <ChartData>
+          <ChartSeries>
+            <DataPoints>
+              <DataPoint>
+                <DataValues>
+                  <DataValue>
+                    <Value>=Sum(Fields!HitCount.Value)</Value>
+                  </DataValue>
+                </DataValues>
+                <DataLabel />
+                <Marker>
+                  <Size>6pt</Size>
+                </Marker>
+              </DataPoint>
+            </DataPoints>
+          </ChartSeries>
+        </ChartData>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+      </Chart>
+      <Textbox Name="textbox2">
+        <Left>0.625in</Left>
+        <Top>0.125in</Top>
+        <rd:DefaultName>textbox2</rd:DefaultName>
+        <ZIndex>3</ZIndex>
+        <Width>2.875in</Width>
+        <Style>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontFamily>Verdana</FontFamily>
+          <FontWeight>700</FontWeight>
+          <FontSize>12pt</FontSize>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>Best Bet Keyword Report</Value>
+      </Textbox>
+      <Textbox Name="textbox1">
+        <Top>0.625in</Top>
+        <rd:DefaultName>textbox1</rd:DefaultName>
+        <ZIndex>2</ZIndex>
+        <Visibility>
+          <Hidden>=Count(Fields!SearchTermDesc.Value, "Keywords") = 0</Hidden>
+        </Visibility>
+        <Width>4.75in</Width>
+        <Style>
+          <TextAlign>Left</TextAlign>
+          <PaddingLeft>2pt</PaddingLeft>
+          <PaddingBottom>2pt</PaddingBottom>
+          <FontWeight>700</FontWeight>
+          <PaddingRight>2pt</PaddingRight>
+          <PaddingTop>2pt</PaddingTop>
+        </Style>
+        <CanGrow>true</CanGrow>
+        <Height>0.25in</Height>
+        <Value>= Parameters!NumSelect.Label + " Used Keywords"</Value>
+      </Textbox>
+      <Table Name="table1">
+        <DataSetName>Keywords</DataSetName>
+        <Top>4.5in</Top>
+        <ZIndex>1</ZIndex>
+        <Visibility>
+          <Hidden>=COUNT(Fields!SearchTermDesc.Value) = 0</Hidden>
+        </Visibility>
+        <Width>3.125in</Width>
+        <Details>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="SearchTermDesc_1">
+                      <rd:DefaultName>SearchTermDesc_1</rd:DefaultName>
+                      <ZIndex>1</ZIndex>
+                      <Style>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!SearchTermDesc.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="Count">
+                      <rd:DefaultName>Count</rd:DefaultName>
+                      <Style>
+                        <TextAlign>Right</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>=Fields!HitCount.Value</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.21in</Height>
+            </TableRow>
+          </TableRows>
+        </Details>
+        <Style>
+          <BorderStyle>
+            <Top>Solid</Top>
+          </BorderStyle>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+        <Header>
+          <TableRows>
+            <TableRow>
+              <TableCells>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox3">
+                      <rd:DefaultName>textbox3</rd:DefaultName>
+                      <ZIndex>3</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Bottom>None</Bottom>
+                          <Top>Solid</Top>
+                          <Left>None</Left>
+                          <Right>None</Right>
+                        </BorderStyle>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Keyword</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+                <TableCell>
+                  <ReportItems>
+                    <Textbox Name="textbox5">
+                      <ZIndex>2</ZIndex>
+                      <Style>
+                        <BorderStyle>
+                          <Bottom>None</Bottom>
+                          <Top>Solid</Top>
+                          <Left>None</Left>
+                          <Right>None</Right>
+                        </BorderStyle>
+                        <TextAlign>Left</TextAlign>
+                        <PaddingLeft>2pt</PaddingLeft>
+                        <PaddingBottom>2pt</PaddingBottom>
+                        <FontFamily>Trebuchet MS</FontFamily>
+                        <FontWeight>900</FontWeight>
+                        <BackgroundColor>Gray</BackgroundColor>
+                        <Color>White</Color>
+                        <PaddingRight>2pt</PaddingRight>
+                        <PaddingTop>2pt</PaddingTop>
+                      </Style>
+                      <CanGrow>true</CanGrow>
+                      <Value>Usage Count</Value>
+                    </Textbox>
+                  </ReportItems>
+                </TableCell>
+              </TableCells>
+              <Height>0.25in</Height>
+            </TableRow>
+          </TableRows>
+          <RepeatOnNewPage>true</RepeatOnNewPage>
+        </Header>
+        <TableColumns>
+          <TableColumn>
+            <Width>2.125in</Width>
+          </TableColumn>
+          <TableColumn>
+            <Width>1in</Width>
+          </TableColumn>
+        </TableColumns>
+        <Height>0.46in</Height>
+      </Table>
+      <Chart Name="chart3">
+        <Legend>
+          <Visible>true</Visible>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+          </Style>
+          <Position>RightCenter</Position>
+        </Legend>
+        <Subtype>Plain</Subtype>
+        <Title />
+        <Height>2.75in</Height>
+        <CategoryAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Visible>true</Visible>
+          </Axis>
+        </CategoryAxis>
+        <PointWidth>0</PointWidth>
+        <Left>3.25in</Left>
+        <ThreeDProperties>
+          <Rotation>30</Rotation>
+          <Inclination>30</Inclination>
+          <Shading>Simple</Shading>
+          <WallThickness>50</WallThickness>
+        </ThreeDProperties>
+        <DataSetName>Keywords</DataSetName>
+        <SeriesGroupings>
+          <SeriesGrouping>
+            <DynamicSeries>
+              <Grouping Name="chart3_SeriesGroup1">
+                <GroupExpressions>
+                  <GroupExpression>=Fields!SearchTermDesc.Value</GroupExpression>
+                </GroupExpressions>
+              </Grouping>
+              <Label>=Fields!SearchTermDesc.Value</Label>
+            </DynamicSeries>
+          </SeriesGrouping>
+          <SeriesGrouping>
+            <StaticSeries>
+              <StaticMember>
+                <Label>Hit Count</Label>
+              </StaticMember>
+            </StaticSeries>
+          </SeriesGrouping>
+        </SeriesGroupings>
+        <Top>4.5in</Top>
+        <PlotArea>
+          <Style>
+            <BorderStyle>
+              <Default>Solid</Default>
+            </BorderStyle>
+            <BackgroundColor>LightGrey</BackgroundColor>
+          </Style>
+        </PlotArea>
+        <ValueAxis>
+          <Axis>
+            <Title />
+            <MajorGridLines>
+              <ShowGridLines>true</ShowGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MajorGridLines>
+            <MinorGridLines>
+              <Style>
+                <BorderStyle>
+                  <Default>Solid</Default>
+                </BorderStyle>
+              </Style>
+            </MinorGridLines>
+            <MajorTickMarks>Outside</MajorTickMarks>
+            <Min>0</Min>
+            <Margin>true</Margin>
+            <Visible>true</Visible>
+            <Scalar>true</Scalar>
+          </Axis>
+        </ValueAxis>
+        <Type>Pie</Type>
+        <Width>4in</Width>
+        <Palette>Default</Palette>
+        <ChartData>
+          <ChartSeries>
+            <DataPoints>
+              <DataPoint>
+                <DataValues>
+                  <DataValue>
+                    <Value>=Sum(Fields!HitCount.Value)</Value>
+                  </DataValue>
+                </DataValues>
+                <DataLabel />
+                <Marker />
+              </DataPoint>
+            </DataPoints>
+          </ChartSeries>
+        </ChartData>
+        <Style>
+          <BackgroundColor>White</BackgroundColor>
+        </Style>
+      </Chart>
+    </ReportItems>
+    <Height>7.5in</Height>
+  </Body>
+  <rd:ReportID>1ef1e009-6f5d-45b3-b575-4b628d75d843</rd:ReportID>
+  <LeftMargin>0.5in</LeftMargin>
+  <EmbeddedImages>
+    <EmbeddedImage Name="searchlogo">
+      <ImageData>Qk22DQAAAAAAADYAAAAoAAAAIwAAACAAAAABABgAAAAAAIANAAAAAAAAAAAAAAAAAAAAAAAA////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////x8f/v7//////////AAAA////////////////////////////////////////////////////////7+/vx8fH////////////////////////////////////////////////////////f3//EBD/FRX/39//////AAAA////////////////////////////////////////r6+vaF5eGA4OAAAAEAcHOBAQAAAADAAAPCUlh4eH19fX////////////////////////////19f/KCj/Cwv/AAD/AAD/MDD/////AAAA////////////////////////////////l5KSGA4OUA8PlwAA5wAA/wAA+wAAvAAAgwAAYAAAQgAAIAAAFgICHBQUdHR0z8/P////////////mpr/EhL/AAD/AAD/AAD/AAD/CAj/l5f/AAAA////////////////////////39/fKBoaaA0N5wAA/wAA/wAA/wAA5wAAmAAARjQ0DhISUFAdf381v79bv79kn59acHBFMDAgSEhI0dHnODj/Dw//AAD/AAD/AAD/AAD/Dw//ODj/7+//AAAA////////////////////x8fHMBUV1wAA/wAA/wAA/wAA/wAA/wAAmgAAGxcXYGAa7+9K//9d//9r//95//+G//+Q//+e//+st7eFAwMoAACfAAD/AAD/AAD/AAD/Fxf/mpr/////////AAAA////////////////t7GxQBQU7wAA/wAA/wAA/wAA/wAA/wAA9wAAKwAAt7co//9G
+//9P//9d//9r//95//+G//+Q//+e//+s//+57++7UFBCAACvAAD/Cwv/KCj/19f/////////////AAAA////////////19fXOBcX7wAA/wAA/wAA/wAA/wAA/wAA/wAAYQAAh4ci//9B//9G//9P//9d//9r//95//+G//+Q//+e//+s//+5///H5+e9AAAwEhLnf3//////////////////////AAAA////////9/f3KBgY3wAA/wAA/wAA/wAA/wAA/wAA/wAAogAAODgR//9P//9P//9P//9P//9d//9r//95//+G//+Q//+e//+s//+5///H///Rt7egODhI////////////////////////AAAA////////eG1thwgI/wAA/wAA/wAA/wAA/wAA/wAAzwAALxgYj480//9d//9d//9d//9d//9d//9r//95//+G//+Q//+e//+s//+5///H///R///fDQ0N7+/v////////////////////AAAA////5+fnIA4O9wAA/wAA/wAA/wAA/wAA/wAAzwAAZzc3ESUlv79Q//9r//9r//9r//9r//9r//9r//95//+G//+Q//+e//+s//+5///H///R///fQEA7v7+/////////////////////AAAA////h4ODeAgI/wAA/wAA/wAA/wAA/wAA3wAAewkJQ4ODCAgE9/d1//95//95//95//95//95//95//95//+G//+Q//+e//+s//+5///H///R///feHhvenp6////////////////////AAAA////QDAwvwAA/wAA/wAA/wAA/wAA/wAA/wAAzwAAcSAgEBAI7+9+//+G//+G//+G//+G//+G//+G//+G//+G//+Q//+e//+s//+5///H///R///fcHBoWVlZ////////////////////AAAA7+/vEAcH/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA7wAAIgYGt7dq//+
+U//+U//+U//+U//+U//+U//+U//+U//+U//+e//+s//+5///H///R///fODg0PjMz////////////////////AAAAx8fHOBAQ/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAAVwAAh4dW//+i//+i//+i//+i//+i//+i//+i//+i//+i//+i//+s//+5///H///R///fBwAAJxkZ////////////////////AAAAr6+vUA8P/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAArwAAODgm9/en//+s//+s//+s//+s//+s//+s//+s//+s//+s//+s//+5///H///Rn5+LWgAAEAkJ////////////////////AAAAn5+fYAwM/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA2wAAPxgYcHBR//+5//+5//+5//+5//+5//+5//+5//+5//+5//+5//+5///H39+3MAAA7wAAAAAA////////////////////AAAAp6enWA4O/wAA/wAA/wAA7wAA3wAA4wAA/wAA/wAA4wAAnAAAVH5+FSYmn598///H///H///H///H///H///H///H///H///H///H5+e0ODguxwAA9wAACAQE////////////////////AAAAx8fHOBAQ/wAA/wAA0wAAbxUVZyIibB8fgAAAgAAAcSAgT3d3TJaWUI6OIzo6SEg85+fB///V///V///V///V///V///V///Vn5+FKCghvwAA/wAA1wAAKBoa////////////////////AAAA5+fnGAoK/wAA7wAAbhUVF4GBHIiIJYuLLY2NNY+PPZGRRJOTTJaWVZiYXZubSHFxKCgkQEA5eHhrn5+Ot7ejf39xUFBHKCgkUQAA7wAA/wAA/wAAtwAASDg4////////////////////AAAA////MCEhzwAAzwAAVTExFIWFHIiIJYuLLY2NNY+PPZGRRJ
+OTTJaWVZiYXZubZZ2dZpWVWHl5RAsLMQoKJhUVRSoqXR4eoQAA/wAA/wAA/wAA/wAAcAcHj4+P////////////////////AAAA////f3t7fwQE3wAAYyEhFIWFHIiIJYuLLY2NNY+PPZGRRJOTTJaWVZiYXZubZZ2dbZ+fd35+nAAA+wAAxwAAvwAA3wAA/wAA/wAA/wAA/wAA/wAAIAwM39/f////////////////////AAAA////39/fKBAQ9wAAqAAASkJCVzc3chYWWUJCPn19PZGRRJOTTJaWVZiYXZubZZ2dbZ+fe0xMwwAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAArwAAUEFB////////////////////////AAAA////////cGVljwQE+wAAvwAAywAA6wAAwwAAdBYWR3p6RJOTTJaWVZiYXZubZZ2dbZ+ffxQU7wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAAMA8Pz8/P////////////////////////AAAA////////5+fnKBMT7wAA/wAA/wAA/wAA5wAAjAAAaTIyYklJXGdnVZiYXZubZZ2dcXx8kAAA+wAA/wAA/wAA/wAA/wAA/wAA/wAA/wAApwUFWEdH////////////////////////////AAAA////////////x8fHQBQU9wAA/wAA/wAA9wAAvwAAvwAAsAAAcyYmVZiYXZubZZ2dbpqae0dHlAAA3wAA/wAA/wAA/wAA/wAA/wAAxwAAQCws9/f3////////////////////////////AAAA////////////////p6KiUA8P9wAA/wAA/wAA/wAA/wAA6wAAeBgYVZiYXZubZZ2dbZ+fdaGhfY+PkAAA8wAA/wAA/wAA/wAAzwAAOB4e5+fn////////////////////////////////AAAA////////////////////p6KiQBQU7wAA/wAA/
+wAA/wAA/wAAqAAAYmhoXZubZZ2dbZ+fdaGhfaOjglhYuAAA/wAA/wAArwUFQCgo39/f////////////////////////////////////AAAA////////////////////////x8fHIBAQfwgI9wAA/wAA/wAA5wAAeB0dXZubZ46Oc2hofEJCgBoagRAQvAAA1wAAUA8PUD4+7+/v////////////////////////////////////////AAAA////////////////////////////7+/vf3d3IA4OaAoKrwAA/wAAqAAAfBMTfg8PrAAAywAA1wAAlwAAUA8PKBoar6+v////////////////////////////////////////////////AAAA////////////////////////////////////5+fnl5eXUEFBAAAAHgkJSg0NQBAQQBAQAAAAGA4OaF5er6+v////////////////////////////////////////////////////////AAAA////////////////////////////////////////////////////5+fnv7+/v7+/v7+/////////////////////////////////////////////////////////////////////////AAAA</ImageData>
+      <MIMEType>image/bmp</MIMEType>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <DataSets>
+    <DataSet Name="Keywords">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandType>StoredProcedure</CommandType>
+        <CommandText>usp_Select_Keywords</CommandText>
+        <QueryParameters>
+          <QueryParameter Name="@DateRange">
+            <Value>=Parameters!DateRange.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@NumSelect">
+            <Value>=Parameters!NumSelect.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@VirtualServerName">
+            <Value>=Parameters!VirtualServerName.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="SearchTermDesc">
+          <DataField>SearchTermDesc</DataField>
+        </Field>
+        <Field Name="HitCount">
+          <DataField>HitCount</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+    <DataSet Name="VirtualServersWithPortals">
+      <Query>
+        <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
+        <CommandText>select distinct VirtualServerName
+from DimArch
+where HasPortalSites = 1
+order by VirtualServerName</CommandText>
+        <DataSourceName>dbSPSReportingSample</DataSourceName>
+      </Query>
+      <Fields>
+        <Field Name="VirtualServerName">
+          <rd:TypeName>System.String</rd:TypeName>
+          <DataField>VirtualServerName</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <Width>7.5in</Width>
+  <InteractiveHeight>11in</InteractiveHeight>
+  <Description>Shows top 20, top 10, bottom 10 or bottom 20 keywords used for searching.  It also shows which keywords have best bets.</Description>
+  <Language>en-US</Language>
+  <TopMargin>0.5in</TopMargin>
+</Report>

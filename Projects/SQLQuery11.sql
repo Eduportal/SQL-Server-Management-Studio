@@ -1,0 +1,1 @@
+select * From dbaadmin..dba_dbinfo where dbname = 'dap'

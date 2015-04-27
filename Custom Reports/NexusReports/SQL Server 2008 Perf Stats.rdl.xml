@@ -1,0 +1,3 @@
+﻿<report>
+	<validate script="sqlnexusCoreValidate2008.sql"/>
+</report>

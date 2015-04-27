@@ -1,0 +1,4373 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<MM:Instances xmlns:MM="http://schemas.microsoft.com/sqlserver/ManagementModel/Serialization/2009/11" xmlns:RE="http://schemas.microsoft.com/sqlserver/RelationalEngine/Serialization/2009/11">
+    <RE:Database MM:Key="/Database[RunBook05]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:CompatibilityLevel>Version90</RE:CompatibilityLevel>
+        <RE:Name>RunBook05</RE:Name>
+    </RE:Database>
+    <RE:Schema MM:Key="/Database[RunBook05]/Schema[dbo]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]" />
+        <RE:Name>dbo</RE:Name>
+        <RE:Owner MM:ReferenceKey="/Database[RunBook05]/User[dbo]" />
+    </RE:Schema>
+    <RE:StoredProcedure MM:Key="/Database[RunBook05]/Schema[dbo]/StoredProcedure[rbsp_CaptureDomainInfo]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:BodyText>set nocount on
+
+--	======================================================================================
+--	Revision History
+--	Date		Author     		Desc
+--	==========	====================	=============================================
+--	09/16/2002	Jim Wilson		New process
+--	12/23/2004	Jim Wilson		Modofied to handel new GETTYPE output (and old)
+--	05/06/2005	Jim Wilson		Major revision.  Removed cursors.  This now handles
+--						named instances.
+--	======================================================================================
+
+/***
+DECLARE  @domain_name varchar(255)
+Select @domain_name = 'test'
+--***/
+
+
+-----------------  declares  ------------------
+
+DECLARE
+	 @miscprint			varchar(1000)
+	,@cmd				varchar(255)
+	,@osqlcmd			varchar(400)
+	,@charpos			int
+	,@charpos2			int
+	,@start_pos			int
+	,@counter			int
+	,@counter_txt			char(4)
+	,@server_flag			char(1)
+	,@IPAddress_flag		char(1)
+	,@hotfix_flag			char(1)
+	,@drives_flag			char(1)
+	,@services_flag			char(1)
+	,@mssql_flag			char(1)
+	,@cluster_flag			char(1)
+	,@SQLversion_flag		char(1)
+	,@PSHotFix_flag			char(1)
+	,@application_flag		char(1)
+	,@memory_update_flag		char(1)
+	,@hold_ID			varchar(2000)
+	,@hold_sqlinstance		sysname
+	,@hold_sqlagent			sysname
+	,@save_srvrname			sysname
+	,@save_srvrname2		sysname
+	,@save_srvrname3		sysname
+	,@save_srvrname_sql		sysname
+	,@save_hostname			sysname
+	,@save_OSversion		varchar(100)
+	,@save_OSBuild			varchar(100)
+	,@save_OSOrgInstalDate		varchar(50)
+	,@save_Domain			varchar(50)
+	,@save_PDC			varchar(50)
+	,@save_IPAddress		varchar(50)
+	,@save_Processor		varchar(50)
+	,@save_hotfix			varchar(20)
+	,@save_DriveName		varchar(2)
+	,@save_DriveFileSys		varchar(8)
+	,@save_DriveSize		varchar(8)
+	,@save_DriveFree		varchar(8)
+	,@save_DriveUsed		varchar(8)
+	,@save_ServiceStatus		varchar(7)
+	,@save_ServiceName		varchar(50)
+	,@save_NetworkCard		varchar(50)
+	,@save_SysUpTime		varchar(50)
+	,@save_LocalAdmin		varchar(100)
+	,@save_PShotfix			varchar(20)
+	,@save_PShotfix_date		varchar(20)
+	,@save_application		varchar(100)
+	,@save_PSIEversion		varchar(50)
+	,@save_PSSystemRoot		varchar(50)
+	,@save_PSPhysicalMemory		varchar(50)
+	,@save_MemoryPhysical		varchar(50)
+	,@save_MemoryVirtual		varchar(50)
+	,@save_MemoryPagefile		varchar(50)
+	,@save_MemoryVirtAvail		varchar(50)
+	,@save_SQLVersion		varchar(50)
+	,@save_SQLcollation		varchar(500)
+	,@save_SQLServiceID		varchar(50)
+	,@save_SQLAgentID		varchar(50)
+	,@save_SQLSysFilesPath		varchar(100)
+	,@save_SQLSysDBFilesPath	varchar(100)
+	,@save_SQLBackupFilePath	varchar(100)
+	,@save_SQLDatabaseName		varchar(100)
+
+
+DECLARE
+	 @cu11SRVRname		nvarchar(255)
+
+DECLARE
+	 @cu20SRVRtype		nvarchar(255)
+
+DECLARE
+	 @cu21SRVRinfo		nvarchar(255)
+
+DECLARE
+	 @cu22PSinfo		nvarchar(255)
+
+DECLARE
+	 @cu23LocalAdmin	nvarchar(255)
+
+DECLARE
+	 @cu24Memory		nvarchar(255)
+
+DECLARE
+	 @cu25PING		nvarchar(255)
+
+DECLARE
+	 @cu31SQLversion	nvarchar(255)
+
+DECLARE
+	 @cu32SQLcollation	nvarchar(500)
+
+DECLARE
+	 @cu33SQLserviceID	nvarchar(2000)
+
+DECLARE
+	 @cu34SQLagentID	nvarchar(2000)
+
+DECLARE
+	 @cu35SQLSysFilesPath	nvarchar(2000)
+
+DECLARE
+	 @cu36SQLSysDBFilesPath	nvarchar(2000)
+
+DECLARE
+	 @cu37SQLBackupFilePath	nvarchar(500)
+
+DECLARE
+	 @cu38SQLDatabaseName	nvarchar(255)
+
+
+
+
+----------------  initial values  -------------------
+
+
+
+--  Create temp tables and table variables
+CREATE TABLE #temp_tbl	(text01	nvarchar(400))
+
+CREATE TABLE #temp_tbl2	(text01	nvarchar(400))
+
+CREATE TABLE #temp_sql (text01	nvarchar(400)) 
+
+CREATE TABLE #reginfo (value varchar(2000))
+
+
+
+
+--declare @tvar_SRVRnames table(@cu11SRVRname sysname)
+
+
+
+
+
+--  Check Input parms
+If @domain_name is null
+   begin
+	Print 'Error!  Input parameter (domain name) was not entered.'
+	goto label99
+   end
+
+
+
+---------------------------------------------------------------
+--  START PROCESS
+---------------------------------------------------------------
+
+--------------------  Process Server names  -------------------
+select @cmd = 'net view /DOMAIN:' + @domain_name
+insert #temp_tbl (text01) exec master..xp_cmdshell @cmd
+delete from #temp_tbl where text01 is null
+--select * from #temp_tbl
+
+
+If (select count(*) from #temp_tbl) &gt; 0
+   begin
+	start_SRVRnames:
+	Select @cu11SRVRname = (Select top 1 text01 from #temp_tbl)
+
+--print @cu11SRVRname	
+ 
+	Select @save_OSBuild = 'NT '
+	Select @server_flag = 'n'
+	Select @IPAddress_flag = 'n'
+	Select @hotfix_flag = 'n'
+	Select @drives_flag = 'n'
+	Select @services_flag = 'n'
+	Select @mssql_flag = 'n'
+	Select @cluster_flag = 'n'
+	Select @SQLversion_flag = '0'
+	Select @application_flag = 'n'
+	Select @memory_update_flag = 'n'
+	Select @save_PSPhysicalMemory = ' '
+	Select @counter = 1
+	Select @counter_txt = str(@counter, 4)
+	delete from #temp_sql
+
+	If substring(@cu11SRVRname, 1, 2) &lt;&gt; '\\'
+	   begin
+		goto skip_to_next
+	   end
+
+--	If (substring(@cu11SRVRname, 3, 6) &lt;&gt; 'dapsql'
+--	  and substring(@cu11SRVRname, 3, 6) &lt;&gt; 'gmssql')
+--	   begin
+--		goto skip_to_next
+--	   end
+
+
+	Select @save_srvrname = rtrim(substring(@cu11SRVRname, 1, 23))
+
+
+	--  Process for Server type  -----------------------------------
+	--  execute the gettype command via cmdshell and drop the results in the temp table
+	delete from #temp_tbl2
+	select @cmd = 'gettype /S ' + @save_srvrname
+	--print @cmd
+	insert #temp_tbl2(text01) exec master..xp_cmdshell @cmd
+	Delete from #temp_tbl2 where text01 is null or text01 = ''
+	--select * from #temp_tbl2
+
+	If exists (select * from #temp_tbl2 where text01 like '%ERROR:%')
+	   begin
+		Select @server_flag = 'n'
+		goto end_SRVRtype 
+	   end
+
+
+	--  Capture Host Name
+	Select @cu20SRVRtype = (Select top 1 text01 from #temp_tbl2 where text01 like 'Host Name:%')
+	If @cu20SRVRtype is not null and @cu20SRVRtype &lt;&gt; ''
+	   begin
+		Select @save_hostname = ''
+		Select @save_hostname = substring(@cu20SRVRtype, 14, 100)
+		Select @save_srvrname2 = rtrim(@save_hostname)
+	   end
+
+	--  Capture OS Version
+	Select @cu20SRVRtype = (Select top 1 text01 from #temp_tbl2 where text01 like 'Name:%')
+	If @cu20SRVRtype is not null and @cu20SRVRtype &lt;&gt; ''
+	   begin
+		Select @charpos = charindex(' Server ', @cu20SRVRtype, 1)
+		IF @charpos &lt;&gt; 0
+		   begin
+			Select @server_flag = 'y'
+
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~ServerName~' + @save_srvrname2
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+
+			Select @charpos = charindex('Windows', @cu20SRVRtype, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+				Select @save_OSVersion = rtrim(substring(@cu20SRVRtype, @charpos, 50))
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~OSVersion~' + @save_OSVersion
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+			   end
+
+		   end
+	   end
+
+
+	end_SRVRtype:
+
+
+
+	--  If this is not a server, skip the data gatering process and get the next servername to process
+	If @server_flag = 'n'
+	   begin
+		goto skip_to_next
+	   end
+
+
+
+	--  Process for SRVINFO  -----------------------------------
+	--  execute the srvinfo command via cmdshell and drop the results in the temp table
+	delete from #temp_tbl2
+	select @cmd = 'srvinfo ' + @save_srvrname
+	--print @cmd
+	insert #temp_tbl2(text01) exec master..xp_cmdshell @cmd
+	Delete from #temp_tbl2 where text01 is null or text01 = ''
+	--select * from #temp_tbl2
+
+
+	If (select count(*) from #temp_tbl2) &gt; 0
+	   begin
+		start_SRVINFO:
+		Select @cu21SRVRinfo = (Select top 1 text01 from #temp_tbl2)
+		--print @cu21SRVRinfo
+
+
+		--  Check to see if we are processing hot fixes
+		If @hotfix_flag = 'y' and substring(@cu21SRVRinfo, 1, 4) = '   ['
+		   begin
+			Select @save_hotfix = rtrim(substring(@cu21SRVRinfo, 4, 20))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~HotFixName~' + @save_hotfix
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+			goto end_SRVINFO
+		   end
+		Else
+		   begin
+			Select @hotfix_flag = 'n'
+		   end
+
+
+		--  Check to see if we are processing drive info
+		If @drives_flag = 'y' and substring(@cu21SRVRinfo, 1, 2) = '  '
+		   begin
+			Select @save_DriveName = rtrim(substring(@cu21SRVRinfo, 3, 2))
+			Select @save_DriveFileSys = rtrim(ltrim(substring(@cu21SRVRinfo, 6, 7)))
+			Select @save_DriveSize = rtrim(ltrim(substring(@cu21SRVRinfo, 16, 8)))
+			Select @save_DriveFree = rtrim(ltrim(substring(@cu21SRVRinfo, 26, 8)))
+			Select @save_DriveUsed = rtrim(ltrim(substring(@cu21SRVRinfo, 36, 8)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~Drives~' + @save_DriveName + '~' + @save_DriveFileSys + '~' + @save_DriveSize + '~' + @save_DriveFree + '~' + @save_DriveUsed
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+			goto end_SRVINFO
+		   end
+		Else
+		   begin
+			Select @drives_flag = 'n'
+		   end
+
+
+		--  Check to see if we are processing services info
+		If @services_flag = 'y' and substring(@cu21SRVRinfo, 1, 4) = '   ['
+		   begin
+			Select @save_ServiceStatus = rtrim(substring(@cu21SRVRinfo, 5, 7))
+			Select @save_ServiceName = rtrim(ltrim(substring(@cu21SRVRinfo, 14, 50)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~Services~' + @save_ServiceName + '~' + @save_ServiceStatus
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+
+
+
+			If @save_ServiceName = 'MSSQLServerADHelper'
+			   begin
+				Select @mssql_flag = 'y'
+			   end
+			Else If @save_ServiceName = 'MSSQLSERVER'
+			   begin
+				Select @mssql_flag = 'y'
+				insert into #temp_sql (text01) values (@save_ServiceName)
+			   end
+			Else If @save_ServiceName like 'MSSQL$%'
+			   begin
+				Select @mssql_flag = 'y'
+				insert into #temp_sql (text01) values (@save_ServiceName)
+			   end
+			Else If @save_ServiceName = 'Cluster Service' and @save_ServiceStatus = 'Running'
+			   begin
+				Select @cluster_flag = 'y'
+			   end
+			goto end_SRVINFO
+		   end
+		Else
+		   begin
+			Select @services_flag = 'n'
+		   end
+
+
+
+		If substring(@cu21SRVRinfo, 1, 12) = 'Server Name:'
+		   begin
+			Select @save_srvrname3 = substring(@cu21SRVRinfo, 14, 23)
+			If @save_srvrname &lt;&gt; '\\' + @save_srvrname3
+			   begin
+				Select @miscprint = 'DBA Warning:  Runbook capture process - Servername from srvinfo (' + @save_srvrname3 + ') does not match input servername (' + @save_srvrname + ').'
+				Print @miscprint
+			   end
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 8) = 'NT Type:'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 9) = 'Security:'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 13) = 'Current Type:'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 13) = 'Product Name:'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 10) = 'Registered'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 10) = 'ProductID:'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 8) = 'Protocol'
+		   begin
+			goto end_SRVINFO
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 8) = 'Version:'
+		   begin
+			Select @save_OSBuild = @save_OSBuild + substring(@cu21SRVRinfo, 10, 10)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 7) = 'Build:'
+		   begin
+			Select @save_OSBuild = @save_OSBuild + substring(@cu21SRVRinfo, 1, 50)
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~OSBuild~' + @save_OSBuild
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 22) = 'Original Install Date:'
+		   begin
+			Select @save_OSOrgInstalDate = rtrim(substring(@cu21SRVRinfo, 24, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~OSOrgInstalDate~' + @save_OSOrgInstalDate
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 7) = 'Domain:'
+		   begin
+			Select @save_Domain = rtrim(substring(@cu21SRVRinfo, 9, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~DomainName~' + @save_Domain
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 4) = 'PDC:'
+		   begin
+			Select @save_PDC = rtrim(substring(@cu21SRVRinfo, 6, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~PDC~' + @save_PDC
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 11) = 'IP Address:'
+		   begin
+			Select @IPAddress_flag = 'y'
+			Select @save_IPAddress = rtrim(substring(@cu21SRVRinfo, 13, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~ServerIP~' + @save_IPAddress
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 3) = 'CPU'
+		   begin
+			Select @save_Processor = rtrim(substring(@cu21SRVRinfo, 9, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~Processor~' + @save_Processor
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 9) = 'Hotfixes:'
+		   begin
+			Select @hotfix_flag = 'y'
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 6) = 'Drive:'
+		   begin
+			Select @drives_flag = 'y'
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 9) = 'Services:'
+		   begin
+			Select @services_flag = 'y'
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 12) = 'Network Card'
+		   begin
+			Select @save_NetworkCard = rtrim(substring(@cu21SRVRinfo, 1, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~NetworkCard~' + @save_NetworkCard
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu21SRVRinfo, 1, 15) = 'System Up Time:'
+		   begin
+			Select @save_SysUpTime = rtrim(substring(@cu21SRVRinfo, 17, 50))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SysUpTime~' + @save_SysUpTime
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+
+
+		end_SRVINFO:
+
+
+		--  Check to see if there are more rows to process
+		Delete from #temp_tbl2 where text01 = @cu21SRVRinfo
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			goto start_SRVINFO
+		   end
+
+	   end
+	
+
+
+
+	--  Process for PSinfo  -----------------------------------
+	--  execute the PSinfo command via cmdshell and drop the results in the temp table
+	Delete from #temp_tbl2
+	select @cmd = 'PSinfo ' + @save_srvrname + ' -h -s'
+	--print @cmd
+	insert #temp_tbl2(text01) exec master..xp_cmdshell @cmd
+	Delete from #temp_tbl2 where text01 is null or text01 = ''
+	Delete from #temp_tbl2 where substring(text01, 1, 1) = char(13)
+	--select * from #temp_tbl2
+
+
+	If (select count(*) from #temp_tbl2) &gt; 0
+	   begin
+		start_PSinfo:
+		Select @cu22PSinfo = (Select top 1 text01 from #temp_tbl2)
+		--print @cu22PSinfo
+
+
+
+		--  Check to see if we are done processing PS hot fixes
+		If substring(@cu22PSinfo, 1, 13) = 'Applications:'
+		   begin
+			Select @PSHotFix_flag = 'n'
+			Select @application_flag = 'y'
+			goto end_PSinfo
+		   end
+
+		--  Check to see if we are processing PS hot fixes
+		If @PSHotFix_flag = 'y'
+		   begin
+			Select @save_PShotfix = rtrim(ltrim(substring(@cu22PSinfo, 1, 12)))
+			Select @save_PShotfix_date = rtrim(ltrim(substring(@cu22PSinfo, 13, 50)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~PSHotFix~' + @save_PShotfix + '~' + @save_PShotfix_date
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+			goto end_PSinfo
+		   end
+
+
+		--  Check to see if we are processing applications
+		If @application_flag = 'y' and (@cu22PSinfo &lt;&gt; '')
+		   begin
+			Select @save_application = rtrim(ltrim(substring(@cu22PSinfo, 1, 100)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~PSApplication~' + @save_application
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+			goto end_PSinfo
+		   end
+		Else
+		   begin
+			Select @application_flag = 'n'
+		   end
+
+
+		If substring(@cu22PSinfo, 1, 10) = 'OS Hot Fix'
+		   begin
+			Select @PSHotFix_flag = 'y'
+			goto end_PSinfo
+		   end
+
+		If substring(@cu22PSinfo, 1, 11) = 'IE version:'
+		   begin
+			Select @save_PSIEversion = rtrim(ltrim(substring(@cu22PSinfo, 12, 50)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~PSIEversion~' + @save_PSIEversion
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu22PSinfo, 1, 12) = 'System root:'
+		   begin
+			Select @save_PSSystemRoot = rtrim(ltrim(substring(@cu22PSinfo, 14, 50)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~PSSystemRoot~' + @save_PSSystemRoot
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+		Else If substring(@cu22PSinfo, 1, 16) = 'Physical memory:'
+		   begin
+			Select @save_PSPhysicalMemory = rtrim(ltrim(substring(@cu22PSinfo, 17, 50)))
+		   end
+
+
+		end_PSinfo:
+
+
+		--  Check to see if there are more rows to process
+		Delete from #temp_tbl2 where text01 = @cu22PSinfo
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			goto start_PSinfo
+		   end
+
+	   end
+
+
+
+
+	--  Process for LOCAL  -----------------------------------
+	--  execute the LOCAL command via cmdshell and drop the results in the temp table
+	Delete from #temp_tbl2
+	select @cmd = 'local administrators \\' + @save_srvrname2
+	--print @cmd
+	insert #temp_tbl2(text01) exec master..xp_cmdshell @cmd
+	Delete from #temp_tbl2 where text01 is null or text01 = ''
+	--select * from #temp_tbl2
+
+
+	If (select count(*) from #temp_tbl2) &gt; 0
+	   begin
+		start_LOCAL:
+		Select @cu23LocalAdmin = (Select top 1 text01 from #temp_tbl2)
+		--print @cu23LocalAdmin
+
+
+
+		Select @save_LocalAdmin = rtrim(substring(@cu23LocalAdmin, 1, 100))
+
+		--  Remove char(10)from record
+		label03:
+		Select @charpos = charindex(char(10), @save_LocalAdmin, 1)
+		IF @charpos &lt;&gt; 0
+		   begin
+		    Select @save_LocalAdmin = stuff(@save_LocalAdmin, @charpos, 1, ' ')
+		   end	
+
+		Select @charpos = charindex(char(10), @save_LocalAdmin, 1)
+		IF @charpos &lt;&gt; 0
+		   begin
+		    goto label03
+	 	   end
+
+		--  Remove char(13)from record
+		label04:
+		Select @charpos = charindex(char(13), @save_LocalAdmin, 1)
+		IF @charpos &lt;&gt; 0
+		   begin
+		    Select @save_LocalAdmin = stuff(@save_LocalAdmin, @charpos, 1, ' ')
+		   end	
+
+		Select @charpos = charindex(char(13), @save_LocalAdmin, 1)
+		IF @charpos &lt;&gt; 0
+		   begin
+		    goto label04
+	 	   end
+
+		Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~LocalAdminName~' + RTRIM(LTRIM(@save_LocalAdmin))
+		insert into rb_Capture_data (capdata_detail) values (@miscprint)
+		--Print @miscprint
+		Select @counter = @counter + 1
+		Select @counter_txt = str(@counter, 4)
+
+
+
+		--  Check to see if there are more rows to process
+		Delete from #temp_tbl2 where text01 = @cu23LocalAdmin
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			goto start_LOCAL
+		   end
+	   end
+
+
+
+
+
+
+	--  Process for MemoryInfo  -----------------------------------
+	--  Capture memory information for the server and drop the results in the temp table (process only works for win2k)
+	If substring(@save_OSBuild, 1, 6) in ('NT 5.0', 'NT 5.1', 'NT 5.2') 
+	   begin
+		Delete from #temp_tbl2
+		select @cmd = 'cscript //nologo c:\winnt\system32\logmeminfo.vbs /s' + @save_srvrname2
+		--print @cmd
+		insert #temp_tbl2(text01) exec master..xp_cmdshell @cmd
+		Delete from #temp_tbl2 where text01 is null or text01 = ''
+		--select * from #temp_tbl2
+
+
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			start_MEMInfo:
+			Select @cu24Memory = (Select top 1 text01 from #temp_tbl2)
+			--print @cu24Memory
+
+			Select @charpos = charindex('Error', @cu24Memory, 1)
+			Select @charpos2 = charindex(@save_srvrname2, @cu24Memory, 1)
+			IF @charpos = 0 and @charpos2 &lt;&gt; 0
+			   begin
+				Select @save_MemoryPhysical = rtrim(ltrim(substring(@cu24Memory, 21, 12))) 
+				Select @save_MemoryVirtual = rtrim(ltrim(substring(@cu24Memory, 36, 12))) 
+				Select @save_MemoryPagefile = rtrim(ltrim(substring(@cu24Memory, 51, 12))) 
+				Select @save_MemoryVirtAvail = rtrim(ltrim(substring(@cu24Memory, 66, 12))) 
+
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~MemoryPhysical~' + @save_MemoryPhysical
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~MemoryVirtual~' + @save_MemoryVirtual
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~MemoryPageFile~' + @save_MemoryPagefile
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~MemoryVirtAvail~' + @save_MemoryVirtAvail
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+
+				Select @memory_update_flag = 'y'
+			   end
+
+
+			--  Check to see if there are more rows to process
+			Delete from #temp_tbl2 where text01 = @cu24Memory
+			If (select count(*) from #temp_tbl2) &gt; 0
+			   begin
+				goto start_MEMInfo
+			   end
+		   end
+	   end	
+
+
+	IF @memory_update_flag = 'n' and @save_PSPhysicalMemory &lt;&gt; ' '
+	   begin
+		Select @save_MemoryPhysical = @save_PSPhysicalMemory 
+
+		Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~MemoryPhysical~' + @save_MemoryPhysical
+		insert into rb_Capture_data (capdata_detail) values (@miscprint)
+		--Print @miscprint
+		Select @counter = @counter + 1
+		Select @counter_txt = str(@counter, 4)
+
+		Select @memory_update_flag = 'y'
+	   end
+
+
+
+
+
+
+
+
+
+	--  Process for PING  -----------------------------------
+	--  If the IP Address has not yet been captured, or we are processing a clustered server
+	--  try using PING.
+	If @IPAddress_flag = 'n' or @cluster_flag = 'y'
+	   begin
+		Select @IPAddress_flag = 'n'
+		Delete from #temp_tbl2
+		select @cmd = 'PING ' + @save_srvrname2
+		--print @cmd
+		insert #temp_tbl2(text01) exec master..xp_cmdshell @cmd
+		Delete from #temp_tbl2 where text01 is null or text01 = ''
+		Delete from #temp_tbl2 where text01 = char(9)
+		--select * from #temp_tbl2
+
+
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			start_PING:
+			Select @cu25PING = (Select top 1 text01 from #temp_tbl2)
+			--print @cu25PING
+
+
+			Select @charpos = charindex('Reply from', @cu25PING, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+				Select @IPAddress_flag = 'y'
+				Select @charpos2 = charindex(':', @cu25PING, 1)
+				Select @save_IPAddress = rtrim(substring(@cu25PING, @charpos+11, @charpos2-@charpos-11))
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~ServerIP~' + @save_IPAddress
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+			   end
+
+
+			--  Check to see if there are more rows to process
+			Delete from #temp_tbl2 where text01 = @cu25PING
+			If (select count(*) from #temp_tbl2) &gt; 0
+			   begin
+				goto start_PING
+			   end
+		   end
+	   end	
+
+
+
+
+
+
+	--  Process for SQL  -----------------------------------
+	--  If the server we are processing is a SQL Server, gather the SQL info
+	If @mssql_flag = 'y' and (select count(*) from #temp_sql) &gt; 0
+	   begin
+		start_SQL:
+		Select @hold_sqlinstance = (Select top 1 text01 from #temp_sql)
+
+		-- Set the sql instance name for osql processing
+		Select @charpos = charindex('$', @hold_sqlinstance)
+		IF @charpos &lt;&gt; 0
+		   begin
+			Select @save_srvrname_sql = @save_srvrname2 + '\'+ rtrim(substring(@hold_sqlinstance, @charpos+1, 50))
+		   end
+		Else
+		   begin
+			Select @save_srvrname_sql = @save_srvrname2
+		   end
+
+
+
+
+		--  Get SQL version information
+		Delete from #temp_tbl2
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"select @@version" -n -E'
+		--print @osqlcmd
+		insert #temp_tbl2(text01) exec master..xp_cmdshell @osqlcmd
+		Delete from #temp_tbl2 where text01 is null or text01 = ''
+		--select * from #temp_tbl2
+
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			start_SQLversion:
+			Select @cu31SQLversion = (Select top 1 text01 from #temp_tbl2)
+			--print @cu31SQLversion
+
+
+			--  Check to make sure we have access to SQL, if not set the sql flag to 'n'
+			Select @charpos = charindex('access denied', @cu31SQLversion)
+			Select @charpos2 = charindex('Login failed', @cu31SQLversion)
+
+			IF @charpos &lt;&gt; 0 or @charpos2 &lt;&gt; 0
+			   begin
+				goto end_SQL
+			   end
+
+			Select @charpos = charindex('Microsoft SQL Server', @cu31SQLversion)
+			IF @charpos &lt;&gt; 0
+			   begin
+				Select @charpos = charindex('-', @cu31SQLversion, @charpos+20)
+				Select @save_SQLVersion = rtrim(substring(@cu31SQLversion, @charpos+2, 50))
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLVersion~' + @save_srvrname_sql + '~' + @save_SQLVersion
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+			   end
+			
+
+			--  Check to see if there are more rows to process
+			Delete from #temp_tbl2 where text01 = @cu31SQLversion
+			If (select count(*) from #temp_tbl2) &gt; 0
+			   begin
+				goto start_SQLversion
+			   end
+		   end
+
+
+
+
+
+		--  Get SQL collation information
+		Delete from #temp_tbl2
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"exec master..sp_helpsort" -n -E -h-1 -w500'
+		--print @osqlcmd
+		Insert #temp_tbl2 (text01) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #temp_tbl2 where text01 is null or text01 = ''
+		--select * from #temp_tbl2
+
+		If exists(select * from #temp_tbl2 where text01 like '%sort order%') and substring(@save_SQLVersion, 1, 1) = '8'
+		   begin
+			Select @cu32SQLcollation = (Select top 1 text01 from #temp_tbl2 where text01 like '%sort order%')
+			Select @save_SQLcollation = rtrim(ltrim(@cu32SQLcollation))
+			--Print @save_SQLcollation
+
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLCollation~' + @save_srvrname_sql + '~' + @save_SQLcollation
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+
+
+
+
+
+
+
+		--  Get SQL service ID information
+		Delete from #reginfo
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"master.dbo.xp_regread N''HKEY_LOCAL_MACHINE'', ''System\CurrentControlSet\Services\' + rtrim(@hold_sqlinstance) + ''', N''ObjectName''" -n -E -h-1 -w2000'
+		--print @osqlcmd
+		Insert #reginfo (value) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #reginfo where value is null or value = ''
+		Delete from #reginfo where value = char(9)
+		Delete from #reginfo where value like '%ObjectName%'
+		Delete from #reginfo where value like '%affected%'
+		--select * from #reginfo
+
+		If (select count(*) from #reginfo) &gt; 0
+		   begin
+			Select @cu33SQLserviceID = (Select top 1 value from #reginfo)
+			--Print @cu33SQLserviceID
+
+			--  Remove tabs from record
+			label09:
+			Select @charpos = charindex(char(9), @cu33SQLserviceID, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    Select @cu33SQLserviceID = stuff(@cu33SQLserviceID, @charpos, 1, ' ')
+			   end	
+
+			Select @charpos = charindex(char(9), @cu33SQLserviceID, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    goto label09
+		 	   end
+
+			Select @save_SQLServiceID = rtrim(ltrim(substring(@cu33SQLserviceID, 1, 500)))
+
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLServiceID~' + @save_srvrname_sql + '~' + @save_SQLServiceID
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+
+
+
+
+		--  Get SQL Agent ID information
+		Select @charpos = charindex('$', @hold_sqlinstance)
+		IF @charpos &lt;&gt; 0
+		   begin
+			Select @hold_sqlagent = replace(@hold_sqlinstance, 'MSSQL$', 'SQLAgent$')
+		   end
+		Else
+		   begin
+			Select @hold_sqlagent = 'SQLServerAgent'
+		   end
+
+		delete from #reginfo
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"master.dbo.xp_regread N''HKEY_LOCAL_MACHINE'', ''System\CurrentControlSet\Services\' + @hold_sqlagent + ''', N''ObjectName''" -n -E -h-1 -w2000'
+		--print @osqlcmd
+		Insert #reginfo (value) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #reginfo where value is null or value = ''
+		Delete from #reginfo where value = char(9)
+		Delete from #reginfo where value like '%ObjectName%'
+		Delete from #reginfo where value like '%affected%'
+		--select * from #reginfo
+
+		If (select count(*) from #reginfo) &gt; 0
+		   begin
+			Select @cu34SQLagentID = (Select top 1 value from #reginfo)
+			--Print @cu34SQLagentID
+
+
+			--  Remove tabs from record
+			label11:
+			Select @charpos = charindex(char(9), @cu34SQLagentID, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    Select @cu34SQLagentID = stuff(@cu34SQLagentID, @charpos, 1, ' ')
+			   end	
+
+			Select @charpos = charindex(char(9), @cu34SQLagentID, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    goto label11
+		 	   end
+
+			Select @save_SQLagentID = rtrim(ltrim(substring(@cu34SQLagentID, 1, 500)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLAgentID~' + @save_srvrname_sql + '~' + @save_SQLagentID
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+
+
+
+
+
+		--  Get SQL SysFiles Path information
+		delete from #reginfo
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"master.dbo.xp_instance_regread N''HKEY_LOCAL_MACHINE'', ''Software\Microsoft\MSSQLServer\Setup'', N''SQLPath''" -n -E -h-1 -w2000'
+		--print @osqlcmd
+		Insert #reginfo (value) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #reginfo where value is null or value = ''
+		Delete from #reginfo where value = char(9)
+		Delete from #reginfo where value like '%SQLPath%'
+		Delete from #reginfo where value like '%affected%'
+		--select * from #reginfo
+
+		If (select count(*) from #reginfo) &gt; 0
+		   begin
+			Select @cu35SQLSysFilesPath = (Select top 1 value from #reginfo)
+			--Print @cu35SQLSysFilesPath
+
+
+			--  Remove tabs from record
+			label13:
+			Select @charpos = charindex(char(9), @cu35SQLSysFilesPath, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    Select @cu35SQLSysFilesPath = stuff(@cu35SQLSysFilesPath, @charpos, 1, ' ')
+			   end	
+
+			Select @charpos = charindex(char(9), @cu35SQLSysFilesPath, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    goto label13
+		 	   end
+
+			Select @save_SQLSysFilesPath = rtrim(ltrim(substring(@cu35SQLSysFilesPath, 1, 500)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLSysFilesPath~' + @save_srvrname_sql + '~' + @save_SQLSysFilesPath
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+
+
+
+
+
+		--  Get SQL SysDBFiles Path and Error Log Path information
+		delete from #reginfo
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"master.dbo.xp_instance_regread N''HKEY_LOCAL_MACHINE'', ''Software\Microsoft\MSSQLServer\Setup'', N''SQLDataRoot''" -n -E -h-1 -w2000'
+		--print @osqlcmd
+		Insert #reginfo (value) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #reginfo where value is null or value = ''
+		Delete from #reginfo where value = char(9)
+		Delete from #reginfo where value like '%SQLDataRoot%'
+		Delete from #reginfo where value like '%affected%'
+		--select * from #reginfo
+
+		If (select count(*) from #reginfo) &gt; 0
+		   begin
+			Select @cu36SQLSysDBFilesPath = (Select top 1 value from #reginfo)
+			--Print @cu36SQLSysDBFilesPath
+
+
+			--  Remove tabs from record
+			label15:
+			Select @charpos = charindex(char(9), @cu36SQLSysDBFilesPath, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    Select @cu36SQLSysDBFilesPath = stuff(@cu36SQLSysDBFilesPath, @charpos, 1, ' ')
+			   end	
+
+			Select @charpos = charindex(char(9), @cu36SQLSysDBFilesPath, 1)
+			IF @charpos &lt;&gt; 0
+			   begin
+			    goto label15
+		 	   end
+
+			Select @save_SQLSysDBFilesPath = rtrim(ltrim(substring(@cu36SQLSysDBFilesPath, 1, 500)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLSysDBFilesPath~' + @save_srvrname_sql + '~' + @save_SQLSysDBFilesPath + '\data'
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLErrorLogsPath~' + @save_srvrname_sql + '~' + @save_SQLSysDBFilesPath + '\log'
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+		   end
+
+
+
+
+		--  Get SQL Backup File Path information
+		delete from #temp_tbl2
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"select physical_device_name from msdb..backupmediafamily where media_set_id = (select max (media_set_id) from msdb..backupmediafamily)" -n -E -h-1'
+		--print @osqlcmd
+		Insert #temp_tbl2 (text01) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #temp_tbl2 where text01 is null or text01 = ''
+		Delete from #temp_tbl2 where text01 = char(9)
+		--select * from #temp_tbl2
+
+
+		If (select count(*) from #temp_tbl2 where text01 like '%Backup\%') &gt; 0
+		   begin
+			Select @cu37SQLBackupFilePath = (Select top 1 text01 from #temp_tbl2 where text01 like '%Backup\%')
+			--Print @cu37SQLBackupFilePath
+
+			Select @save_SQLBackupFilePath = ''
+
+
+		 	Select @charpos = charindex('Backup\', @cu37SQLBackupFilePath)
+			IF @charpos &lt;&gt; 0
+			   begin
+				Select @save_SQLBackupFilePath = rtrim(ltrim(substring(@cu37SQLBackupFilePath, 1, @charpos+5)))
+				Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLBackupFilePath~' + @save_srvrname_sql + '~' + @save_SQLBackupFilePath
+				insert into rb_Capture_data (capdata_detail) values (@miscprint)
+				--Print @miscprint
+				Select @counter = @counter + 1
+				Select @counter_txt = str(@counter, 4)
+			   end
+
+		   end
+
+
+
+
+		--  Get SQL Database information
+		delete from #temp_tbl2
+		Select @osqlcmd = 'osql -S' + @save_srvrname_sql + ' -dmaster -Q"select name from master..sysdatabases order by name" -n -E -h-1'
+		--print @osqlcmd
+		Insert #temp_tbl2 (text01) EXEC master..xp_cmdshell @osqlcmd
+		Delete from #temp_tbl2 where text01 is null or text01 = ''
+		Delete from #temp_tbl2 where text01 = char(9)
+		Delete from #temp_tbl2 where text01 like '%affected%'
+		--select * from #temp_tbl2
+
+
+		If (select count(*) from #temp_tbl2) &gt; 0
+		   begin
+			start_SQLDatabaseName:
+			Select @cu38SQLDatabaseName = (Select top 1 text01 from #temp_tbl2)
+			--Print @cu38SQLDatabaseName
+
+
+			Select @save_SQLDatabaseName = rtrim(ltrim(substring(@cu38SQLDatabaseName, 1, 100)))
+			Select @miscprint = @save_srvrname2 + '~' + @counter_txt + '~SQLDatabaseName~' + @save_srvrname_sql + '~' + @save_SQLDatabaseName
+			insert into rb_Capture_data (capdata_detail) values (@miscprint)
+			--Print @miscprint
+			Select @counter = @counter + 1
+			Select @counter_txt = str(@counter, 4)
+
+
+			--  Check to see if there are more rows to process
+			Delete from #temp_tbl2 where text01 = @cu38SQLDatabaseName
+			If (select count(*) from #temp_tbl2) &gt; 0
+			   begin
+				goto start_SQLDatabaseName
+			   end
+		   end
+
+
+
+		end_SQL:
+
+
+		--  Check to see if there are more SQL Instances to process
+		Delete from #temp_sql where text01 = @hold_sqlinstance
+		If (select count(*) from #temp_sql) &gt; 0
+		   begin
+			goto start_SQL
+		   end
+	   end
+
+
+
+
+
+	skip_to_next:
+
+	--  Check to see if there are more servernames to process
+	Delete from #temp_tbl where text01 = @cu11SRVRname
+	If (select count(*) from #temp_tbl) &gt; 0
+	   begin
+		goto start_SRVRnames
+	   end
+
+   end
+
+
+---------------------------  Finalization  -----------------------
+drop TABLE #temp_tbl
+drop TABLE #temp_tbl2
+drop TABLE #temp_sql
+drop TABLE #reginfo
+
+label99:
+
+</RE:BodyText>
+        <RE:ExecutionContext>
+            <RE:ContextType>Caller</RE:ContextType>
+        </RE:ExecutionContext>
+        <RE:ForReplication>False</RE:ForReplication>
+        <RE:IsEncrypted>False</RE:IsEncrypted>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:IsRecompiled>False</RE:IsRecompiled>
+        <RE:IsSqlClr>False</RE:IsSqlClr>
+        <RE:Name>rbsp_CaptureDomainInfo</RE:Name>
+        <RE:Parameters>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/StoredProcedure[rbsp_CaptureDomainInfo]/ScalarParameter[@domain_name]" />
+        </RE:Parameters>
+        <RE:Startup>False</RE:Startup>
+    </RE:StoredProcedure>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[KnowledgeBaseID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Date]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[ModifiedBy]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Description]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Notes]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Server]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>DBA2005</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[KnowledgeBaseID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[CaseNumber]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[DateOpened]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[DateClosed]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[Domain]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[DBA]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[Server]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[ProblemDescription]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[ProblemResolution]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[MicrosoftContactName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[MicrosoftContactEmail]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[MicrosoftContactPhone]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[Application]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>knowledgebase</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/Column[LocAdminName]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Admins</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/Column[ApplicationName]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Applications</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Capture_data]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Capture_data]/Column[capdata_ID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Capture_data]/Column[capdata_detail]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Capture_data</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/Column[CategoryType]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Category</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[CommentNum]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[CommentTitle]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[CommentText]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Comments</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[SQLID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[DatabaseName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[Comments]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Dbases</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveFileSys]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveSize]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveFree]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveUsed]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Drives</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]/Column[DL_Title]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]/Column[DL_detail]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_DropList</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[HotFixName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[InstallDate]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_HotFixes</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[KnowledgeBaseID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[CaseNumber]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[DateOpened]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[DateClosed]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[DBAID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[Server]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[ProblemDescription]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[ProblemResolution]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[MicrosoftContactName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[MicrosoftContactEmail]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[MicrosoftContactPhone]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[Application]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_KnowledgeBase</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[Physical_tot]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[Virtual_tot]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[Pagefile]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[VirtAvail_current]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[VirtAvail_past]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Memory</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[AdminPW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID01Text]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID01PW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID02Text]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID02PW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID03Text]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID03PW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID04Text]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID04PW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID05Text]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID05PW]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Passwords</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[DayofWeek]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[DayNumber]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[TimeOfDay]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[Notfication]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[Notes]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[PrimaryContact]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[PrimaryContact_title]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[SecondaryContact]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[SecondaryContact_title]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[DependencyInstructions]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[RebootScheduleConfirmed]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Reboot</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[RelatedServerName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[Comments]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_RelatedServers</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerIP]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Location]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Machine]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Processor]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ProcessorCount]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[NetworkCardCount]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[PropertyNum]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[DomainName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[PDC]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSVersion]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSBuild]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSOrgInstalDate]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSSysRoot]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[IEVersion]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[SysUpTime]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[RemoteType]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[RemotePassword]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerRole]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Tape_backup_sched]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ModifyUser]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ModifyDate]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[AutoUpdate_Date]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Server</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServiceName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServiceStatus]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Services</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLVersion]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLCollation]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLServiceID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLServicePW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLAgentID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLAgentPW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLSAPW]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_SysFiles]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_SysDBFiles]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_ErrorLogs]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_BackupFiles]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPort]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_SQLInfo</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[ServerID]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[ListOrder]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[SupportName]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[Department]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[SupportType]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[WorkPhone]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[CellPhone]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[Comments]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>rb_Support</RE:Name>
+    </RE:Table>
+    <RE:Table MM:Key="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[serverId]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[servername]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[serverrole]" />
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[categorytype]" />
+        </RE:Columns>
+        <RE:IsQuotedIdentifierOn>True</RE:IsQuotedIdentifierOn>
+        <RE:Name>runbookSQL</RE:Name>
+    </RE:Table>
+    <RE:ScalarParameter MM:Key="/Database[RunBook05]/Schema[dbo]/StoredProcedure[rbsp_CaptureDomainInfo]/ScalarParameter[@domain_name]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>255</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:DefaultValue>null</RE:DefaultValue>
+        <RE:IsOutput>False</RE:IsOutput>
+        <RE:Name>@domain_name</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+    </RE:ScalarParameter>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[KnowledgeBaseID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>KnowledgeBaseID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Date]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Date</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[ModifiedBy]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>75</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ModifiedBy</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Description]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Description</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Notes]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Notes</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[DBA2005]/Column[Server]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Server</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[KnowledgeBaseID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>KnowledgeBaseID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[CaseNumber]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CaseNumber</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[DateOpened]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DateOpened</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[DateClosed]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DateClosed</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[Domain]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Domain</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[DBA]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DBA</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[Server]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Server</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[ProblemDescription]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ProblemDescription</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[ProblemResolution]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ProblemResolution</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[MicrosoftContactName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>MicrosoftContactName</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[MicrosoftContactEmail]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>MicrosoftContactEmail</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[MicrosoftContactPhone]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>MicrosoftContactPhone</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[knowledgebase]/Column[Application]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Application</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/Column[LocAdminName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>LocAdminName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/ForeignKeyConstraint[FK_rb_Admins_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/ForeignKeyConstraint[FK_rb_Admins_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Admins_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/PrimaryKeyConstraint[PK_rb_Admins]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/RelationalIndex[PK_rb_Admins]" />
+        <RE:Name>PK_rb_Admins</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/Column[ApplicationName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ApplicationName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/ForeignKeyConstraint[FK_rb_Applications_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/ForeignKeyConstraint[FK_rb_Applications_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Applications_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/PrimaryKeyConstraint[PK_rb_Applications]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/RelationalIndex[PK_rb_Applications]" />
+        <RE:Name>PK_rb_Applications</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Capture_data]/Column[capdata_ID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>capdata_ID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Capture_data]/Column[capdata_detail]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>1000</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>capdata_detail</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/Column[CategoryType]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CategoryType</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/ForeignKeyConstraint[FK_rb_Category_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/ForeignKeyConstraint[FK_rb_Category_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Category_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/PrimaryKeyConstraint[PK_rb_Category]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/RelationalIndex[PK_rb_Category]" />
+        <RE:Name>PK_rb_Category</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[CommentNum]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CommentNum</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[CommentTitle]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CommentTitle</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[CommentText]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CommentText</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/ForeignKeyConstraint[FK_rb_Comments_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/ForeignKeyConstraint[FK_rb_Comments_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Comments_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/PrimaryKeyConstraint[PK_rb_Comments]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/RelationalIndex[PK_rb_Comments]" />
+        <RE:Name>PK_rb_Comments</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[SQLID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[DatabaseName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>SysName</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DatabaseName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[Comments]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Comments</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/ForeignKeyConstraint[FK_rb_Dbases_rb_SQLInfo]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/ForeignKeyConstraint[FK_rb_Dbases_rb_SQLInfo]/ForeignKeyColumn[SQLID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Dbases_rb_SQLInfo</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/PrimaryKeyConstraint[PK_rb_Dbases]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/RelationalIndex[PK_rb_Dbases]" />
+        <RE:Name>PK_rb_Dbases</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>2</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DriveName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveFileSys]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>8</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DriveFileSys</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveSize]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>8</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DriveSize</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveFree]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>8</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DriveFree</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[DriveUsed]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>8</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DriveUsed</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/ForeignKeyConstraint[FK_rb_Drives_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/ForeignKeyConstraint[FK_rb_Drives_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Drives_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/PrimaryKeyConstraint[PK_rb_Drives]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/RelationalIndex[PK_rb_Drives]" />
+        <RE:Name>PK_rb_Drives</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]/Column[DL_Title]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DL_Title</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]/Column[DL_detail]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DL_detail</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]/PrimaryKeyConstraint[PK_rb_DropList]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_DropList]/RelationalIndex[PK_rb_DropList]" />
+        <RE:Name>PK_rb_DropList</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[HotFixName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>HotFixName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[InstallDate]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>InstallDate</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/ForeignKeyConstraint[FK_rb_HotFixes_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/ForeignKeyConstraint[FK_rb_HotFixes_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_HotFixes_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/PrimaryKeyConstraint[PK_rb_HotFixes]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/RelationalIndex[PK_rb_HotFixes]" />
+        <RE:Name>PK_rb_HotFixes</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[KnowledgeBaseID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>KnowledgeBaseID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[CaseNumber]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CaseNumber</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[DateOpened]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DateOpened</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[DateClosed]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DateClosed</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[DBAID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DBAID</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[Server]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Server</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[ProblemDescription]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ProblemDescription</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[ProblemResolution]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ProblemResolution</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[MicrosoftContactName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>MicrosoftContactName</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[MicrosoftContactEmail]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>MicrosoftContactEmail</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[MicrosoftContactPhone]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>MicrosoftContactPhone</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_KnowledgeBase]/Column[Application]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Application</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[Physical_tot]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Physical_tot</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[Virtual_tot]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Virtual_tot</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[Pagefile]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Pagefile</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[VirtAvail_current]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>VirtAvail_current</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[VirtAvail_past]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>VirtAvail_past</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/ForeignKeyConstraint[FK_rb_Memory_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/ForeignKeyConstraint[FK_rb_Memory_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Memory_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[AdminPW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>AdminPW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID01Text]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID01Text</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID01PW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID01PW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID02Text]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID02Text</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID02PW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID02PW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID03Text]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID03Text</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID03PW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID03PW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID04Text]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID04Text</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID04PW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID04PW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID05Text]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID05Text</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ID05PW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ID05PW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/ForeignKeyConstraint[FK_rb_Passwords_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/ForeignKeyConstraint[FK_rb_Passwords_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Passwords_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[DayofWeek]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DayofWeek</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[DayNumber]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DayNumber</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[TimeOfDay]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>TimeOfDay</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[Notfication]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>250</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Notfication</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[Notes]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Notes</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[PrimaryContact]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>PrimaryContact</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[PrimaryContact_title]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>PrimaryContact_title</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[SecondaryContact]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SecondaryContact</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[SecondaryContact_title]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SecondaryContact_title</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[DependencyInstructions]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DependencyInstructions</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[RebootScheduleConfirmed]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Bit</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>RebootScheduleConfirmed</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/ForeignKeyConstraint[FK_rb_Reboot_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/ForeignKeyConstraint[FK_rb_Reboot_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Reboot_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[RelatedServerName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>RelatedServerName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[Comments]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Comments</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/ForeignKeyConstraint[FK_rb_RelatedServers_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/ForeignKeyConstraint[FK_rb_RelatedServers_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_RelatedServers_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/PrimaryKeyConstraint[PK_rb_RelatedServers]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/RelationalIndex[PK_rb_RelatedServers]" />
+        <RE:Name>PK_rb_RelatedServers</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerIP]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>15</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerIP</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Location]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Location</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Machine]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Machine</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Processor]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Processor</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ProcessorCount]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>SmallInt</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ProcessorCount</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[NetworkCardCount]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>SmallInt</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>NetworkCardCount</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[PropertyNum]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>15</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>PropertyNum</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[DomainName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>DomainName</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[PDC]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>PDC</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSVersion]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>OSVersion</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSBuild]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>OSBuild</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSOrgInstalDate]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>OSOrgInstalDate</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[OSSysRoot]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>OSSysRoot</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[IEVersion]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>IEVersion</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[SysUpTime]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SysUpTime</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[RemoteType]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>RemoteType</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[RemotePassword]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>RemotePassword</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerRole]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerRole</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[Tape_backup_sched]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Tape_backup_sched</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ModifyUser]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ModifyUser</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ModifyDate]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ModifyDate</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[AutoUpdate_Date]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>DateTime</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>AutoUpdate_Date</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/PrimaryKeyConstraint[PK_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/RelationalIndex[PK_rb_server]" />
+        <RE:Name>PK_rb_server</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServiceName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServiceName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServiceStatus]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServiceStatus</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/ForeignKeyConstraint[FK_rb_Services_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/ForeignKeyConstraint[FK_rb_Services_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_Services_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/PrimaryKeyConstraint[PK_rb_Services]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/RelationalIndex[PK_rb_Services]" />
+        <RE:Name>PK_rb_Services</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IdentityColumnInfo>
+            <RE:Seed>1</RE:Seed>
+            <RE:Increment>1</RE:Increment>
+        </RE:IdentityColumnInfo>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>SysName</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLVersion]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLVersion</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLCollation]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>500</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLCollation</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLServiceID]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLServiceID</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLServicePW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLServicePW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLAgentID]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLAgentID</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLAgentPW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLAgentPW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLSAPW]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLSAPW</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_SysFiles]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLPath_SysFiles</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_SysDBFiles]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLPath_SysDBFiles</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_ErrorLogs]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLPath_ErrorLogs</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPath_BackupFiles]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>100</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>VarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLPath_BackupFiles</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLPort]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>SysName</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SQLPort</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/ForeignKeyConstraint[FK_rb_SQLInfo_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/ForeignKeyConstraint[FK_rb_SQLInfo_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_SQLInfo_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/PrimaryKeyConstraint[PK_rb_SQLInfo]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/RelationalIndex[PK_rb_SQLInfo]" />
+        <RE:Name>PK_rb_SQLInfo</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[ServerID]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ServerID</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[ListOrder]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>SmallInt</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>ListOrder</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[SupportName]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SupportName</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[Department]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Department</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[SupportType]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>40</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>SupportType</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[WorkPhone]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>15</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>WorkPhone</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[CellPhone]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>15</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>CellPhone</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[Comments]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NText</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>Comments</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/ForeignKeyConstraint[FK_rb_support_rb_server]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]" />
+        <RE:Columns>
+            <MM:Reference MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/ForeignKeyConstraint[FK_rb_support_rb_server]/ForeignKeyColumn[ServerID]" />
+        </RE:Columns>
+        <RE:DeleteAction>NoAction</RE:DeleteAction>
+        <RE:IsChecked>True</RE:IsChecked>
+        <RE:IsEnabled>True</RE:IsEnabled>
+        <RE:Name>FK_rb_support_rb_server</RE:Name>
+        <RE:NotForReplication>False</RE:NotForReplication>
+        <RE:ReferencedTable MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]" />
+        <RE:UpdateAction>NoAction</RE:UpdateAction>
+    </RE:ForeignKeyConstraint>
+    <RE:PrimaryKeyConstraint MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/PrimaryKeyConstraint[PK_rb_support]">
+        <RE:Parent MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]" />
+        <RE:AssociatedIndex MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/RelationalIndex[PK_rb_support]" />
+        <RE:Name>PK_rb_support</RE:Name>
+    </RE:PrimaryKeyConstraint>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[serverId]">
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>0</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>Int</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>serverId</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[servername]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>128</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>servername</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[serverrole]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>serverrole</RE:Name>
+        <RE:Nullable>True</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:Column MM:Key="/Database[RunBook05]/Schema[dbo]/Table[runbookSQL]/Column[categorytype]">
+        <RE:Collation>
+            <RE:Name>SQL_Latin1_General_CP1_CI_AS</RE:Name>
+        </RE:Collation>
+        <RE:DataType>
+            <RE:SystemDataType>
+                <RE:Length>50</RE:Length>
+                <RE:NumericPrecision>0</RE:NumericPrecision>
+                <RE:NumericScale>0</RE:NumericScale>
+                <RE:TypeSpec>NVarChar</RE:TypeSpec>
+            </RE:SystemDataType>
+        </RE:DataType>
+        <RE:IsColumnSet>False</RE:IsColumnSet>
+        <RE:IsSparse>False</RE:IsSparse>
+        <RE:Name>categorytype</RE:Name>
+        <RE:Nullable>False</RE:Nullable>
+        <RE:RowGuidCol>False</RE:RowGuidCol>
+    </RE:Column>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/ForeignKeyConstraint[FK_rb_Admins_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Admins]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/ForeignKeyConstraint[FK_rb_Applications_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Applications]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/ForeignKeyConstraint[FK_rb_Category_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Category]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/ForeignKeyConstraint[FK_rb_Comments_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Comments]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/ForeignKeyConstraint[FK_rb_Dbases_rb_SQLInfo]/ForeignKeyColumn[SQLID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[SQLID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Dbases]/Column[SQLID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/ForeignKeyConstraint[FK_rb_Drives_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Drives]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/ForeignKeyConstraint[FK_rb_HotFixes_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_HotFixes]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/ForeignKeyConstraint[FK_rb_Memory_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Memory]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/ForeignKeyConstraint[FK_rb_Passwords_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Passwords]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/ForeignKeyConstraint[FK_rb_Reboot_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Reboot]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/ForeignKeyConstraint[FK_rb_RelatedServers_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_RelatedServers]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/ForeignKeyConstraint[FK_rb_Services_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Services]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/ForeignKeyConstraint[FK_rb_SQLInfo_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_SQLInfo]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+    <RE:ForeignKeyColumn MM:Key="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/ForeignKeyConstraint[FK_rb_support_rb_server]/ForeignKeyColumn[ServerID]">
+        <RE:ReferencedColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Server]/Column[ServerID]" />
+        <RE:ReferencingColumn MM:ReferenceKey="/Database[RunBook05]/Schema[dbo]/Table[rb_Support]/Column[ServerID]" />
+    </RE:ForeignKeyColumn>
+</MM:Instances>

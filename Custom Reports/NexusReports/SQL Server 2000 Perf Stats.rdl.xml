@@ -1,0 +1,3 @@
+﻿<report>
+	<validate script="sql2000blockingvalidate.sql"/>
+</report>

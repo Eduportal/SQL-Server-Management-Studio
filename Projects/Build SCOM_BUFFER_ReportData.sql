@@ -1,0 +1,27 @@
+USE [dbaperf]
+GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+
+IF OBJECT_ID('[dbo].[SCOM_BUFFER_ReportData]') IS NOT NULL
+	DROP TABLE [dbo].[SCOM_BUFFER_ReportData]
+GO
+CREATE TABLE [dbo].[SCOM_BUFFER_ReportData](
+	[ServerName] [nvarchar](128) NOT NULL,
+	[CounterName] [nvarchar](225) NOT NULL,
+	[Time] [datetime] NOT NULL,
+	[Value] [float] NOT NULL,
+	[Slope] [float] NOT NULL
+) ON [PRIMARY]
+GO
+CREATE UNIQUE CLUSTERED INDEX IX_SCOM_BUFFER_ReportData_PKey ON dbo.SCOM_BUFFER_ReportData
+	(
+	ServerName,
+	CounterName,
+	Time
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = ON, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+ALTER TABLE dbo.SCOM_BUFFER_ReportData SET (LOCK_ESCALATION = TABLE)
+GO
+

@@ -1,0 +1,314 @@
+//+---------------------------------------------------------------------------
+//
+//  Microsoft Windows
+//  Copyright (C) Microsoft Corporation, 2001
+//
+//  File:       sdwrap.idl
+//
+//  Contents:   definitions of Source Depot wrapper interfaces
+//
+//----------------------------------------------------------------------------
+
+import "oaidl.idl";
+import "sdapi.idl";
+
+//----------------------------------------------------------------------------
+
+interface ISDSpecFormWrapper;
+interface ISDOutputArray;
+
+//----------------------------------------------------------------------------
+
+[
+   object,
+   uuid(9606DA06-5F09-4607-90AD-D11EE4758CED), 
+   dual,  
+   helpstring("ISourceDepotAPIWrapper interface"),
+   pointer_default(unique)
+]
+interface ISourceDepotAPIWrapper : IDispatch
+{
+// methods passed to SDAPI level
+// these methods will override
+
+   [propput] 
+   HRESULT port([in] BSTR bstrPort);
+   [propget] 
+   HRESULT port([out, retval] BSTR *pbstrPort);
+   
+   [propput] 
+   HRESULT user([in] BSTR bstrUser);
+   [propget]
+   HRESULT user([out, retval] BSTR *pbstrUser);
+   
+   [propput] 
+   HRESULT password([in] BSTR bstrPassword);
+   [propget]
+   HRESULT password([out, retval] BSTR *pbstrPassword);
+   
+   [propput] 
+   HRESULT client([in] BSTR bstrClient);
+   [propget]
+   HRESULT client([out, retval] BSTR *pbstrClient);
+   
+   [propput] 
+   HRESULT host([in] BSTR bstrHost);
+   
+   [propget]
+   HRESULT host([out, retval] BSTR *pbstrHost);
+
+// method to set files to work with 
+   [propput,
+    helpstring("set filelist, you may set '...' and '*' as well")]
+   HRESULT fileList([in] BSTR bstrFiles);
+
+   [propget,
+    helpstring("get filelist")]
+   HRESULT fileList([out, retval] BSTR *pbstrFiles);
+
+// Initialization
+   [helpstring("initialize")]
+   HRESULT Init([in, defaultvalue("")] BSTR bstrDirectory);
+
+//  commands execution   
+   [helpstring("asynchronously execute command")]
+   HRESULT ExecCommand([in] BSTR bstrCommand,                       //command itself
+                       [in, defaultvalue(-1)] VARIANT_BOOL fStructured,
+                       [in, defaultvalue(0)] IDispatch *pSpecFormWrapper);  //spec form object
+   
+   [propget,
+    helpstring("returns if last command is finished or not")]
+   HRESULT commandFinished([out, retval] VARIANT_BOOL *pfFinished);
+
+   [helpstring("interrupts command, partially retrieved data is still available")]
+   HRESULT CancelCommand();
+   
+   [helpstring("waits until last executed command is finished or timeout elapsed")]
+   HRESULT WaitForFinish([in, defaultvalue(-1)] long lMilliseconds);
+
+// spec form retrieving method
+   [helpstring("Gets input spec form from 'command -o'")]
+   HRESULT GetSpecForm([in] BSTR bstrCommand, [out, retval] ISDSpecFormWrapper **ppSpecFormWrapper);
+
+// get result methods
+   [propget,
+    helpstring("returns one object which represent all the results")]
+   HRESULT result([out, retval] ISDOutputArray **ppArray); 
+
+   [propget,
+    helpstring("returns array of warnings")]
+   HRESULT warnings([out, retval] ISDOutputArray **ppArray); 
+
+   [propget, 
+    helpstring("returns array of errors")]
+   HRESULT errors([out, retval] ISDOutputArray **ppArray); 
+}
+
+//----------------------------------------------------------------------------
+
+[
+   object,
+   uuid(9606DA08-5F09-4607-90AD-D11EE4758CED), 
+   dual,  
+   helpstring("ISDStructuredArray interface"),
+   pointer_default(unique)
+]
+interface ISDOutputArray : IDispatch
+{
+   [propget,
+    id(DISPID_VALUE),
+    helpstring("returns the value at a given index")]
+   HRESULT item([in] long lIndex, [out, retval] IDispatch **ppiItem);
+   
+   [propget, id(DISPID_NEWENUM), helpstring("returns enumeration of contained items")]
+   HRESULT _NewEnum([out, retval] IUnknown** ppUnk);
+   
+   [propget,
+    id(2),
+    helpstring("length of array")]
+   HRESULT length([out, retval] long *plLength);
+
+
+   [id(3),
+    helpstring("add item to the end of array")]
+   HRESULT Add([in] IDispatch *piItem);
+
+   [id(4),
+    helpstring("appends another array to the end array")]
+   HRESULT Append([in]IDispatch *pArray);
+
+   [id(5),
+    helpstring("removes element(s) at specified index. In the process, it shifts down all the elements above the removed element(s)")]
+   HRESULT Remove([in] long lIndex, [in, defaultvalue(1)] long lCount);
+
+   // methods for direct access to data
+   [propget,
+    id(6),
+    helpstring("returns number of structured output field by given index")]
+   HRESULT fieldCount([out, retval] long *plCount); 
+
+   [id(7),
+    helpstring("returns name of structured output field by given index")]
+   HRESULT GetFieldNameByIndex([in] long lIndex,    
+                               [out, retval] BSTR *pbstrFieldName); 
+   
+   [id(8),
+    helpstring("returns result after you execute the command ")]
+    HRESULT GetField([in] long lRecordIndex,    // index of record
+                     [in] BSTR bstrField,       // name of field to get
+                     [out, retval] BSTR *pbstrFieldValue); // value of field
+
+   [id(9),
+    helpstring("Returns a string value consisting of all the elements of an array \
+                concatenated together and separated by the specified separator character")]
+    HRESULT Join([in, defaultvalue("unstructuredData")] BSTR bstrField, // field name
+                 [in, defaultvalue(";")] BSTR bstrSeparator, // separator string                 
+                 [out, retval] BSTR *pbstrJoinString);                         
+                                                             
+
+}
+
+//----------------------------------------------------------------------------
+
+[
+   object,
+   uuid(9606DA0F-5F09-4607-90AD-D11EE4758CED), 
+   dual,  
+   helpstring("ISDSpecFormWrapper interface"),
+   pointer_default(unique)
+]
+interface ISDSpecFormWrapper : IDispatch
+{
+   [propget,
+    id(DISPID_VALUE),
+    helpstring("returns the string representation of the spec form")]
+    HRESULT specForm([out, retval] BSTR *pbstrSpecForm);
+
+   [propput,
+    id(DISPID_VALUE),
+    helpstring("sets the string representation of the spec form")]
+    HRESULT specForm([in] BSTR bstrSpecForm);
+
+   [propget,
+    id(1),
+    helpstring("returns this")]
+    HRESULT this_object([out, retval] ISDSpecFormWrapper **ppObject);
+
+   [id(2),
+    helpstring("returns value of field")]
+    HRESULT GetField([in] BSTR bstrFieldName,              // name of field to get
+                     [out, retval] BSTR *pbstrFieldValue); // value of field
+
+   [id(3),
+    helpstring("sets value of field")]
+    HRESULT SetField([in] BSTR bstrFieldName,       // name of field 
+                     [in] BSTR bstrFieldValue);     // value of field
+
+// for debug use only
+   [propget,
+    hidden,
+    id(4),
+    helpstring("returns dispid for the given name")]
+    HRESULT debug_dispid([in] BSTR bstrMethodName, [out, retval] long *lDispID);
+}
+
+//----------------------------------------------------------------------------
+
+[
+   object,
+   uuid(9606DA0D-5F09-4607-90AD-D11EE4758CED), 
+   dual,  
+   helpstring("ISDOutput interface"),
+   pointer_default(unique)
+]
+interface ISDOutput : IDispatch
+{
+}
+
+//----------------------------------------------------------------------------
+
+[
+   object,
+   uuid(9606DA09-5F09-4607-90AD-D11EE4758CED), 
+   dual,  
+   helpstring("ISourceDepotWrapper interface"),
+   pointer_default(unique)
+]
+interface ISourceDepotWrapper : ISourceDepotAPIWrapper
+{
+   [helpstring("execute 'sd opened' command")]
+   HRESULT ExecOpened([in, defaultvalue("")] BSTR bstrFileList,
+                      [in, defaultvalue(0)] long lChangelist, 
+                      [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd sync' command")]
+   HRESULT ExecSync([in] BSTR bstrFileList,
+                    [in, defaultvalue(FALSE)] VARIANT_BOOL fForcefully,
+                    [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd submit' command")]
+   HRESULT ExecSubmit([in] BSTR bstrFileList,
+                      [in] BSTR bstrDescription,    
+                      [in, defaultvalue(0)] long lChangelist,
+                      [in, defaultvalue("")] BSTR bstrUserOnBehalf,
+                      [in, defaultvalue("")] BSTR bstrClientOnBehalf,
+                      [out, retval] VARIANT_BOOL *pfResult);
+   
+   [helpstring("get changelist number after 'submit' execution")]
+   HRESULT GetChangelistNumber([out, retval] long *plChangelist);
+                         
+   [helpstring("execute 'sd resolve' command")]
+   HRESULT ExecResolve([in] BSTR bstrFileList,
+                       [in] VARIANT_BOOL fSkipConflicted,
+                       [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd revert' command")]
+   HRESULT ExecRevert([in] BSTR bstrFileList,
+                      [in, defaultvalue(0)] long lChangelist,
+                      [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd integrate' command")]
+   HRESULT ExecIntegrate([in] BSTR bstrFileList,
+                         [in] BSTR bstrBranch,
+                         [in, defaultvalue(FALSE)] VARIANT_BOOL fReverseIntegrate,
+                         [in, defaultvalue(0)] long lChangelist,
+                         [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd add' command")]   
+   HRESULT ExecAdd([in] BSTR bstrFileList, 
+                   [in, defaultvalue(0)] long lChangelist,
+                   [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd delete' command")]
+   HRESULT ExecDelete([in] BSTR bstrFileList, 
+                      [in, defaultvalue(0)] long lChangelist,
+                      [out, retval] VARIANT_BOOL *pfResult);
+
+   [helpstring("execute 'sd edit' command")]
+   HRESULT ExecEdit([in] BSTR bstrFileList, 
+                    [in, defaultvalue(0)] long lChangelist,
+                    [out, retval] VARIANT_BOOL *pfResult);
+}
+
+//----------------------------------------------------------------------------
+
+[
+   uuid(9606DA0A-5F09-4607-90AD-D11EE4758CED),
+   version(1.0),
+   helpstring("Source Depot API wrapper library")
+]
+library SourceDepotWrapper
+{
+    importlib("stdole32.tlb");
+    importlib("stdole2.tlb");
+   
+   [uuid(9606DA0E-5F09-4607-90AD-D11EE4758CED)]
+   coclass SDWrapper
+   {
+      [default] interface ISourceDepotWrapper;
+   }       
+}
+
+//----------------------------------------------------------------------------
+
+
