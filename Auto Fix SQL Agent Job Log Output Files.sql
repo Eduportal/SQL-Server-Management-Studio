@@ -1,3 +1,7 @@
+--exec dbaadmin.dbo.dbasp_dba_sqlsetup
+--select dbaadmin.dbo.dbaudf_getSharePath(UPPER(dbaadmin.dbo.dbaudf_getShareUNC('sqljob_logs')))
+
+
 DECLARE @CMD VarChar(max)
 
 DECLARE JobLogFixCursor CURSOR
@@ -9,7 +13,7 @@ WITH		JobSteps
 				,(SELECT STUFF(name,1,1,isnull(nullif(LEFT(name,1),'x'),'')) FROM msdb..sysjobs WHERE job_id = T1.job_id) AS [CleanJobName]
 				,dbaadmin.dbo.dbaudf_ReturnPart((SELECT STUFF(name,1,1,isnull(nullif(LEFT(name,1),'x'),'')) FROM msdb..sysjobs WHERE job_id = T1.job_id),1) AS [JobNameForLog]
 				,*
-		FROM		msdb..sysjobsteps T1
+		FROM		msdb..sysjobsteps T1 WITH(NOLOCK)
 		WHERE		subsystem = 'TSQL'
 		)
 		,CD1
@@ -21,7 +25,13 @@ WITH		JobSteps
 				,CASE WHEN [CleanJobName] LIKE 'APPL%' THEN 'Yes' ELSE 'No' END					AS [IsApplJob]
 				,REPLACE(output_file_name,dbaadmin.dbo.dbaudf_GetFileFromPath(output_file_name),'')		AS [CurrentFolder]
 				,dbaadmin.dbo.dbaudf_GetFileFromPath(output_file_name)						AS [CurrentFileName]
-				,dbaadmin.dbo.dbaudf_getSharePath(dbaadmin.dbo.dbaudf_getShareUNC('sqljob_logs'))+'\'		AS [DefaultFolder]
+				,COALESCE	(
+						NULLIF	(
+							dbaadmin.dbo.dbaudf_getSharePath(UPPER(dbaadmin.dbo.dbaudf_getShareUNC('sqljob_logs')))
+							,'Not Found'
+							)
+						,dbaadmin.dbo.dbaudf_getShareUNC('sqljob_logs')
+						)+'\'										AS [DefaultFolder]
 				,dbaadmin.dbo.dbaudf_FilterCharacters	(
 									[JobNameForLog]
 									,' -/:*?"<>|'
@@ -53,6 +63,7 @@ WITH		JobSteps
 		(
 		SELECT		JobName
 				,step_name
+				,T1.[output_file_name]
 				,T2.[CurrentFolder]
 				,T2.[CurrentFileName]
 				,T2.[DefaultFolder]
@@ -71,10 +82,10 @@ WITH		JobSteps
 				,T1.[database_name]
 				,DB_ID(T1.[database_name]) [db_id]
 				,CASE
-					WHEN T1.[output_file_name] != T2.[DefaultFolder]+T2.[DefaultFileName] OR T1.[flags] != (T1.[flags]|2|4) OR DB_ID(T1.[database_name]) IS NULL
+					WHEN ISNULL(T1.[output_file_name],'') != T2.[DefaultFolder]+T2.[DefaultFileName] OR T1.[flags] != (T1.[flags]|2|4) OR DB_ID(T1.[database_name]) IS NULL
 					THEN 'exec msdb.dbo.sp_update_jobstep @job_id='''+CAST(T1.job_id AS VarChar(50))+''' ,@step_id='+CAST(T1.step_id AS VarChar(10))
 						+ CASE
-							WHEN T1.[output_file_name] != T2.[DefaultFolder]+T2.[DefaultFileName]
+							WHEN ISNULL(T1.[output_file_name],'') != T2.[DefaultFolder]+T2.[DefaultFileName]
 							THEN ' ,@output_file_name='''+T2.[DefaultFolder]+T2.[DefaultFileName]+''''
 							ELSE '' END
 						+ CASE
@@ -124,6 +135,10 @@ END
 CLOSE JobLogFixCursor;
 DEALLOCATE JobLogFixCursor;
 
+--SELECT COALESCE(NULLIF(dbaadmin.dbo.dbaudf_getSharePath(UPPER(dbaadmin.dbo.dbaudf_getShareUNC('sqljob_logs'))),'Not Found'),dbaadmin.dbo.dbaudf_getShareUNC('sqljob_logs'))
+
+
+--SELECT dbaadmin.dbo.dbaudf_getSharePath('SEASSQLNOE01_sqljob_logs')
 
 
 -- UPDATE ALL START NEXT JOB STEPS
