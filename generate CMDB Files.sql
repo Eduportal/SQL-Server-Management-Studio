@@ -167,73 +167,40 @@ EXECUTE [DBAADMIN].[dbo].[dbasp_Export_CsvFile]
 GO
 
 
-
-
-
-
-
-
---DECLARE @filename nvarchar(4000)	= 'C:\temp\DATA_EXTRACT__CLUSTER_SERVERS.csv'
---DECLARE @includeheaders bit		= 1
---DECLARE @quoteall bit			= 1
---DECLARE @provideoutput bit		= 1
---DECLARE	@sqlcmd nvarchar(4000)		= 
---'		SELECT		DISTINCT
---				UPPER(Cluster) [ClusterName]
---				,(SELECT GroupName From [dbacentral].[dbo].[DBA_ClusterInfo] WHERE ResourceType = ''Network Name'' AND ClusterName = T1.Cluster AND (ResourceDetail = T1.ServerName OR ResourceName Like ''%''+T1.ServerName+''%'')) [ClusterGroup]
---				,UPPER([ServerName]) [ServerName]
---				,UPPER(SQLName) [SQLName]
---				,UPPER(DomainName) [DomainName]	
---				,UPPER(COALESCE(FQDN,[ServerName]+ CASE	WHEN DomainName = ''amer''	THEN ''.amer.gettywan.com''
---									WHEN DomainName = ''production''	THEN ''.production.local''
---									WHEN DomainName = ''stage''	THEN ''.stage.local''
---									END)) [FQDN]	
---				,''Cluster Server'' [ServerType]	
---				,Memory	
---				,SQLmax_memory	
---				,FrameWork_ver	
---				,SAN	
---				,PowerPath	
---				,(SELECT	REPLACE(dbaadmin.dbo.dbaudf_Concatenate(ResourceDetail),'','',''|'')
---				  FROM	(
---					SELECT		ResourceDetail
---					FROM		[dbacentral].[dbo].[DBA_ClusterInfo]
---					WHERE		ResourceType = ''IP Address''
---						AND	ClusterName = T1.Cluster
---						AND	GroupName = (SELECT GroupName From [dbacentral].[dbo].[DBA_ClusterInfo] WHERE ResourceType = ''Network Name'' AND ClusterName = T1.Cluster AND (ResourceDetail = T1.ServerName OR ResourceName Like ''%''+T1.ServerName+''%''))
---					UNION
---					SELECT		T1.IPnum
---					) Data
--- 				 ) [IPnum]
---				,CPUphysical	
---				,CPUcore	
---				,CPUlogical	
---				,CPUtype	
---				,OSname	
---				,OSver	
---				,OSinstallDate	
---				,TimeZone	
---				,SystemModel	
---				,Services
---		FROM		[dbacentral].[dbo].[DBA_ServerInfo] T1
---		WHERE		[SQLEnv] = ''Production''
---			AND	[Active] != ''N''
---			AND	NULLIF([Cluster],'''') Is NOT Null
---			AND	ServerName NOT IN	(
---							SELECT		ResourceName
---							FROM		[dbacentral].[dbo].[DBA_ClusterInfo]
---							WHERE		[ResourceType] = ''Node''
---								AND	ResourceName IN (SELECT ServerName FROM [dbacentral].[dbo].[DBA_ServerInfo])
---							)'
+DECLARE @filename nvarchar(4000)	= 'C:\temp\DATA_EXTRACT__CLUSTER_SERVERS.csv'
+DECLARE @includeheaders bit		= 1
+DECLARE @quoteall bit			= 1
+DECLARE @provideoutput bit		= 1
+DECLARE	@sqlcmd nvarchar(4000)		= 
+'		SELECT		DISTINCT
+				UPPER(ClusterName) [ClusterName]
+				,(SELECT GroupName From [dbacentral].[dbo].[DBA_ClusterInfo] WHERE ResourceType = ''Network Name'' AND ClusterName = T1.ClusterName AND (ResourceDetail = T1.ServerName OR ResourceName Like ''%''+T1.ServerName+''%'')) [ClusterGroup]
+				,UPPER([ServerName]) [ServerName]
+				,UPPER(SQLName) [SQLName]
+				,UPPER(DomainName) [DomainName]	
+				,UPPER(COALESCE(FQDN,[ServerName]+ CASE	WHEN DomainName = ''amer''	THEN ''.amer.gettywan.com''
+									WHEN DomainName = ''production''	THEN ''.production.local''
+									WHEN DomainName = ''stage''	THEN ''.stage.local''
+									END)) [FQDN]	
+				,''Cluster Server'' [ServerType]	
+		FROM		[dbacentral].[dbo].[DBA_ServerInfo] T1
+		WHERE		[SQLEnv] = ''Production''
+			AND	[Active] != ''N''
+			AND	NULLIF([ClusterName],'''') Is NOT Null
+			AND	ServerName NOT IN	(
+							SELECT		ResourceName
+							FROM		[dbacentral].[dbo].[DBA_ClusterInfo]
+							WHERE		[ResourceType] = ''Node''
+								AND	ResourceName IN (SELECT ServerName FROM [dbacentral].[dbo].[DBA_ServerInfo])
+							)'
 		
-
---EXECUTE [DBAADMIN].[dbo].[dbasp_Export_CsvFile] 
---   @sqlcmd
---  ,@filename
---  ,@includeheaders
---  ,@quoteall
---  ,@provideoutput
---GO
+EXECUTE [DBAADMIN].[dbo].[dbasp_Export_CsvFile] 
+   @sqlcmd
+  ,@filename
+  ,@includeheaders
+  ,@quoteall
+  ,@provideoutput
+GO
 
 
 
